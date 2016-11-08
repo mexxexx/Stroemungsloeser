@@ -5,10 +5,15 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <math.h>
+#include <time.h>
 #include "boundary.h"
 #include "init.h"
 #include "uvp.h"
 #include "visual.h"
+
+#define PROGRESS_DISPLAY 0.05
+int currentProgressStep = 1;
+time_t start;
 
 int allocateVector(double **vector, int size) {
 	*vector = (double*)malloc(size * sizeof(double));
@@ -28,7 +33,21 @@ void printSnapshot(char *simulationName, int currentSnapshot, double *U, double 
 	sprintf(nameOfPressure, "%s/%s_pressure_%i.vtk", simulationName, simulationName, currentSnapshot++);
 	printVectorField(U, V, imax, jmax, xlength, ylength, nameOfVelocity); 
 	printScalarField(P, imax, jmax, xlength, ylength, nameOfPressure);
-	printf("Time: %f/%f (%3.1f%% completed)\n", t, t_end, t/t_end * 100);		
+	
+	double progress = t/t_end; 
+	if (progress >= PROGRESS_DISPLAY * currentProgressStep) {
+		double elapsedSeconds = (double)(time(NULL)-start);
+		double secondsPerProgressDisplay = elapsedSeconds / currentProgressStep;
+		double secondsLeft = (1.0/PROGRESS_DISPLAY - currentProgressStep) * secondsPerProgressDisplay;
+		
+		printf("%.1f%% completed ", progress * 100);		
+		if (secondsLeft >= 120) 
+			printf("(%.0f minutes remaining)\n", secondsLeft / 60);
+		else 
+			printf("(%.0f seconds remaining)\n", secondsLeft);
+		
+		currentProgressStep++;		
+	}
 }
 
 void initDrivenCavity(double *U, double *V, int imax, int jmax) {
@@ -76,7 +95,8 @@ int calculateFluidDynamics(char* simulationName, double xlength, double ylength,
 	double frameDuration = 0;
 	double umax = (fabs(UI) > eps) ? UI : 1;
 	double vmax = (fabs(VI) > eps) ? VI : 1;
-	//U[POS2D(imax/2, jmax/2, imax+2)]=1;
+	start = time(NULL);
+	
 	while (t < t_end) {
 		computeDelt(&delt, imax, jmax, delx, dely, umax, vmax, Re, tau);
 		setBoundaryCont(U, V, imax, jmax);
@@ -98,6 +118,7 @@ int calculateFluidDynamics(char* simulationName, double xlength, double ylength,
 	}
 	
 	printSnapshot(simulationName, currentSnapshot, U, V, P, imax, jmax, xlength, ylength, t_end, t_end);
+	printf("%i frames taken in a time period of %.2f seconds (%.1f FPS)\n", currentSnapshot, t_end, currentSnapshot/t_end);
 	free(F);
 	free(G);
 	free(rhs);
