@@ -29,8 +29,8 @@ void printSnapshot(char *simulationName, int currentSnapshot, double *U, double 
 					double xlength, double ylength, double t, double t_end) {
 	char nameOfVelocity[256];
 	char nameOfPressure[256];
-	sprintf(nameOfVelocity, "%s/%s_velocity_%i.vtk", simulationName, simulationName, currentSnapshot);
-	sprintf(nameOfPressure, "%s/%s_pressure_%i.vtk", simulationName, simulationName, currentSnapshot++);
+	sprintf(nameOfVelocity, "%s/%s_velocity_%05d.vtk", simulationName, simulationName, currentSnapshot);
+	sprintf(nameOfPressure, "%s/%s_pressure_%05d.vtk", simulationName, simulationName, currentSnapshot++);
 	printVectorField(U, V, imax, jmax, xlength, ylength, nameOfVelocity); 
 	printScalarField(P, imax, jmax, xlength, ylength, nameOfPressure);
 	

@@ -7,7 +7,7 @@ CFLAGS = -Wall
 OBJ = init.o boundary.o uvp.o visual.o main.o
 
 simulation: $(OBJ)
-	$(CC) $(CFLAGS) -o simulation.exe $(OBJ) -lm
+	$(CC) $(CFLAGS) -o simulation $(OBJ) -lm
 	
 init.o			:	init.h
 boundary.o		:	init.h boundary.h
