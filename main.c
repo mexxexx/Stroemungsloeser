@@ -52,7 +52,7 @@ void printSnapshot(char *simulationName, int currentSnapshot, double *U, double 
 
 void initDrivenCavity(double *U, double *V, int imax, int jmax) {
 	for (int i = 1; i <= imax; i++) {
-		U[POS2D(i, jmax+1, imax+2)] = (10.0 - U[POS2D(i, jmax, imax+2)]);
+		U[POS2D(i, jmax+1, imax+2)] = (2.0 - U[POS2D(i, jmax, imax+2)]);
 		//U[POS2D(i, 0, imax+2)] = -(20.0 - U[POS2D(i, 1, imax+2)]);
 	}
 	/*for (int j = 1; j <= jmax; j++) {
@@ -110,7 +110,6 @@ int calculateFluidDynamics(char* simulationName, double xlength, double ylength,
 		
 		if (frameDuration >= del_vec) {
 			printSnapshot(simulationName, currentSnapshot++, U, V, P, imax, jmax, xlength, ylength, t, t_end);
-			//printMatrix(P, imax, jmax);
 			frameDuration -= del_vec;
 		}
 		t += delt;
@@ -119,6 +118,7 @@ int calculateFluidDynamics(char* simulationName, double xlength, double ylength,
 	
 	printSnapshot(simulationName, currentSnapshot, U, V, P, imax, jmax, xlength, ylength, t_end, t_end);
 	printf("%i frames taken in a time period of %.2f seconds (%.1f FPS)\n", currentSnapshot, t_end, currentSnapshot/t_end);
+	printf("Duration: %.1f seconds\n", (double)(time(NULL)-start)); 
 	free(F);
 	free(G);
 	free(rhs);
