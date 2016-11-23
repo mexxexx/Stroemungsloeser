@@ -1,58 +1,64 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "init.h"
 
-int readParameter(char *filename, char *simulationName, double *xlength, double *ylength, int *imax, int *jmax, 
+void parameterError(char *param) {
+	printf("Error reading parameter %s\n", param);
+	exit(EXIT_FAILURE);
+}
+
+void readParameter(char *filename, char *simulationName, double *xlength, double *ylength, int *imax, int *jmax, 
 	double *delx, double *dely, double *delt, double *del_vec, double *t_end, double *tau, int *itermax,
 	double *eps, double *omg, double *alpha, double *Re, double *GX, double *GY, double *UI, double *VI, double *PI) {
 	FILE *f = fopen(filename, "r");
-	if (f == NULL) return -1;
+	if (f == NULL) {
+		printf("Error opening parameter file\n");
+		exit(EXIT_FAILURE);
+	}
 	
-	int error = 0;
-	if (error == 0 && fscanf(f, "%*s = %s\n", simulationName) != 1)
-		error = 1;
-	if (error == 0 && fscanf(f, "%*s = %lf\n", xlength) != 1)
-		error = 2;
-	if (error == 0 && fscanf(f, "%*s = %lf\n", ylength) != 1)
-		error =  3;
-	if (error == 0 && fscanf(f, "%*s = %i\n", imax) != 1)
-		error =  4;
-	if (error == 0 && fscanf(f, "%*s = %i\n", jmax) != 1)
-		error =  5;
+	if (fscanf(f, "%*s = %s\n", simulationName) != 1)
+		parameterError("simulationName");
+	if (fscanf(f, "%*s = %lf\n", xlength) != 1)
+		parameterError("xlength");
+	if (fscanf(f, "%*s = %lf\n", ylength) != 1)
+		parameterError("ylength");
+	if (fscanf(f, "%*s = %i\n", imax) != 1)
+		parameterError("imax");
+	if (fscanf(f, "%*s = %i\n", jmax) != 1)
+		parameterError("jmax");
 	(*delx) = (*xlength) / (*imax);	
 	(*dely) = (*ylength) / (*jmax);	
 		
-	if (error == 0 && fscanf(f, "%*s = %lf\n", delt) != 1)
-		error =  6;
-	if (error == 0 && fscanf(f, "%*s = %lf\n", t_end) != 1)
-		error =  7;
-	if (error == 0 && fscanf(f, "%*s = %lf\n", del_vec) != 1)
-		error =  8;
-	if (error == 0 && fscanf(f, "%*s = %lf\n", tau) != 1)
-		error =  9;
-	if (error == 0 && fscanf(f, "%*s = %i\n", itermax) != 1)
-		error =  10;
-	if (error == 0 && fscanf(f, "%*s = %lf\n", eps) != 1)
-		error =  11;
-	if (error == 0 && fscanf(f, "%*s = %lf\n", omg) != 1)
-		error =  12;
-	if (error == 0 && fscanf(f, "%*s = %lf\n", alpha) != 1)
-		error =  13;
-	if (error == 0 && fscanf(f, "%*s = %lf\n", Re) != 1)
-		error =  14;
-	if (error == 0 && fscanf(f, "%*s = %lf\n", GX) != 1)
-		error =  15;
-	if (error == 0 && fscanf(f, "%*s = %lf\n", GY) != 1)
-		error =  16;
-	if (error == 0 && fscanf(f, "%*s = %lf\n", UI) != 1)
-		error =  17;
-	if (error == 0 && fscanf(f, "%*s = %lf\n", VI) != 1)
-		error =  18;
-	if (error == 0 && fscanf(f, "%*s = %lf\n", PI) != 1)
-		error =  19;
+	if (fscanf(f, "%*s = %lf\n", delt) != 1)
+		parameterError("delt");
+	if (fscanf(f, "%*s = %lf\n", t_end) != 1)
+		parameterError("t_end");
+	if (fscanf(f, "%*s = %lf\n", del_vec) != 1)
+		parameterError("del_vec");
+	if (fscanf(f, "%*s = %lf\n", tau) != 1)
+		parameterError("tau");
+	if (fscanf(f, "%*s = %i\n", itermax) != 1)
+		parameterError("itermax");
+	if (fscanf(f, "%*s = %lf\n", eps) != 1)
+		parameterError("eps");
+	if (fscanf(f, "%*s = %lf\n", omg) != 1)
+		parameterError("omg");
+	if (fscanf(f, "%*s = %lf\n", alpha) != 1)
+		parameterError("alpha");
+	if (fscanf(f, "%*s = %lf\n", Re) != 1)
+		parameterError("Re");
+	if (fscanf(f, "%*s = %lf\n", GX) != 1)
+		parameterError("GX");
+	if (fscanf(f, "%*s = %lf\n", GY) != 1)
+		parameterError("GY");
+	if (fscanf(f, "%*s = %lf\n", UI) != 1)
+		parameterError("UI");
+	if (fscanf(f, "%*s = %lf\n", VI) != 1)
+		parameterError("VI");
+	if (fscanf(f, "%*s = %lf\n", PI) != 1)
+		parameterError("PI");
 		
 	fclose(f);
-	
-	return error;
 }
 
 void initField(double *field, int imax, int jmax, double value) {

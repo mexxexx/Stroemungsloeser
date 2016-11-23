@@ -44,7 +44,7 @@ void printVectorField(double *U, double *V, int imax, int jmax, double xlength, 
 	FILE *f = fopen(filename, "w");
 	if (f == NULL)
 	{
-		printf("Error opening file!\n");
+		printf("Error opening %s!\n", filename);
 		return;
 	} 
 	

@@ -15,17 +15,26 @@
 int currentProgressStep = 1;
 time_t start;
 
-int allocateVector(double **vector, int size) {
-	*vector = (double*)malloc(size * sizeof(double));
-	if (*vector == NULL) {
-		printf("Konnte keinen Speicher allokieren.\n");
-		return 1;
-	}
+char simulationName[256];
 
-	return 0;
+void createSimulationDirectory() {
+	struct stat st = {0};
+	if (stat(simulationName, &st) == -1) {
+		int result;
+		#ifdef __MSDOS__
+		result = mkdir(simulationName);
+		#else
+		result = mkdir(simulationName, 777);
+		#endif
+		
+		if (result) {
+			printf("Verzeichnis für die Simulation konnte nicht angelegt werden\n");
+			exit(EXIT_FAILURE);
+		}
+	}
 }
 
-void printSnapshot(char *simulationName, int currentSnapshot, double *U, double *V, double *P, int imax, int jmax, 
+void printSnapshot(int currentSnapshot, double *U, double *V, double *P, int imax, int jmax, 
 					double xlength, double ylength, double t, double t_end) {
 	char nameOfVelocity[256];
 	char nameOfPressure[256];
@@ -50,6 +59,25 @@ void printSnapshot(char *simulationName, int currentSnapshot, double *U, double 
 	}
 }
 
+void printMatrix(double *matrix, int imax, int jmax) {
+	for (int j = jmax+1; j>=0; j--) {
+		for (int i = 0; i < imax+2; i++) 
+			printf("%f ", matrix[POS2D(i, j, imax+2)]);
+		printf("\n");
+	}
+	printf("\n");
+}
+
+int allocateVector(double **vector, int size) {
+	*vector = (double*)malloc(size * sizeof(double));
+	if (*vector == NULL) {
+		printf("Konnte keinen Speicher allokieren.\n");
+		return 1;
+	}
+
+	return 0;
+}
+
 void initDrivenCavity(double *U, double *V, int imax, int jmax) {
 	for (int i = 1; i <= imax; i++) {
 		U[POS2D(i, jmax+1, imax+2)] = (2.0 - U[POS2D(i, jmax, imax+2)]);
@@ -61,16 +89,7 @@ void initDrivenCavity(double *U, double *V, int imax, int jmax) {
 	}*/
 }
 
-void printMatrix(double *matrix, int imax, int jmax) {
-	for (int j = jmax+1; j>=0; j--) {
-		for (int i = 0; i < imax+2; i++) 
-			printf("%f ", matrix[POS2D(i, j, imax+2)]);
-		printf("\n");
-	}
-	printf("\n");
-}
-
-int calculateFluidDynamics(char* simulationName, double xlength, double ylength, int imax, int jmax, double delx, double dely, 
+int calculateFluidDynamics(double xlength, double ylength, int imax, int jmax, double delx, double dely, 
 		double delt, double t_end, double del_vec, double tau, int itermax, double eps, double omg, 
 		double alpha, double Re, double GX, double GY, double UI, double VI, double PI, double *U, double *V, double *P) {
 	initField(U, imax, jmax, UI);
@@ -93,8 +112,8 @@ int calculateFluidDynamics(char* simulationName, double xlength, double ylength,
 	int currentSnapshot = 1;
 	double t = 0;
 	double frameDuration = 0;
-	double umax = (fabs(UI) > eps) ? UI : 1;
-	double vmax = (fabs(VI) > eps) ? VI : 1;
+	double umax = (fabs(UI) > eps) ? UI : eps;
+	double vmax = (fabs(VI) > eps) ? VI : eps;
 	start = time(NULL);
 	
 	while (t < t_end) {
@@ -109,14 +128,14 @@ int calculateFluidDynamics(char* simulationName, double xlength, double ylength,
 		adapUV(U, V, F, G, P, imax, jmax, delt, delx, dely, &umax, &vmax); 
 		
 		if (frameDuration >= del_vec) {
-			printSnapshot(simulationName, currentSnapshot++, U, V, P, imax, jmax, xlength, ylength, t, t_end);
+			printSnapshot(currentSnapshot++, U, V, P, imax, jmax, xlength, ylength, t, t_end);
 			frameDuration -= del_vec;
 		}
 		t += delt;
 		frameDuration += delt;
 	}
 	
-	printSnapshot(simulationName, currentSnapshot, U, V, P, imax, jmax, xlength, ylength, t_end, t_end);
+	printSnapshot(currentSnapshot, U, V, P, imax, jmax, xlength, ylength, t_end, t_end);
 	printf("%i frames taken in a time period of %.2f seconds (%.1f FPS)\n", currentSnapshot, t_end, currentSnapshot/t_end);
 	printf("Duration: %.1f seconds\n", (double)(time(NULL)-start)); 
 	free(F);
@@ -125,30 +144,22 @@ int calculateFluidDynamics(char* simulationName, double xlength, double ylength,
 	return 0;
 }
 
-void createSimulationDirectory(char *simulationName) {
-	struct stat st = {0};
-
-	if (stat(simulationName, &st) == -1)
-		mkdir(simulationName, 0700); 
-}
-
-int main() {
-	char simulationName[256];
+int main(int argc, char** argv) {
+	char file[256];
+	if (argc==1) {
+		printf("Bitte eine Datei auswählen: ");
+		scanf("%s", file);
+	}
+	else
+		sprintf(file, "%s", argv[1]);
+	
+	
 	int imax, jmax, itermax;
 	double xlength, ylength, delx, dely, delt, t_end, del_vec, tau, eps, omg, alpha, Re, GX, GY, UI, VI, PI;
-	int readingResult = readParameter("test.txt", simulationName, &xlength, &ylength, &imax, &jmax, &delx, &dely, &delt, 
+	readParameter(file, simulationName, &xlength, &ylength, &imax, &jmax, &delx, &dely, &delt, 
 							&del_vec, &t_end, &tau, &itermax, &eps, &omg, &alpha, &Re, &GX, &GY, &UI, &VI, &PI);
 	
-	createSimulationDirectory(simulationName);
-	
-	if (readingResult < 0) {
-		printf("Fehler beim Öffnen der Datei.\n");
-		return 1;
-	}
-	else if (readingResult > 0) {
-		printf("Fehler beim Einlesen des %i-ten Parameters.\n", readingResult);
-		return 1;
-	}
+	createSimulationDirectory();
 	
 	double *U, *V, *P;
 	if (allocateVector(&U, (imax+2) * (jmax+2)))
@@ -163,7 +174,7 @@ int main() {
 		return 1;
 	}
 	
-	calculateFluidDynamics(simulationName, xlength, ylength, imax, jmax, delx, dely, delt, 
+	calculateFluidDynamics(xlength, ylength, imax, jmax, delx, dely, delt, 
 					t_end, del_vec, tau, itermax, eps, omg, alpha, Re, GX, GY, UI, VI, PI, U, V, P);
 	
 	free(U);
