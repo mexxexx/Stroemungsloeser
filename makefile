@@ -16,7 +16,7 @@ visual.o		:	init.h visual.h
 main.o			:	init.h boundary.h uvp.h visual.h
 
 clean:
-	rm -rf *.o *.dat simulation *.prt *.prt_s *.prt_t *.stackdump gmon.out
+	rm -rf *.o *.dat simulation *.prt *.prt_s *.prt_t *.stackdump gmon.out *.txt~
 	
 rmdat:
-	rm -rf *.dat *.part *.prt_s *.prt_t
+	rm -rf *.dat *.part *.prt_s *.prt_t *.txt~
