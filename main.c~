@@ -147,7 +147,7 @@ int calculateFluidDynamics(double xlength, double ylength, int imax, int jmax, d
 int main(int argc, char** argv) {
 	char file[256];
 	if (argc==1) {
-		printf("Bitte eine Datei auswählen, you faggot: ");
+		printf("Bitte eine Datei auswählen: ");
 		scanf("%s", file);
 	}
 	else
