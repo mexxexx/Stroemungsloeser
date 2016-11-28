@@ -2,6 +2,16 @@
 #include <stdlib.h>
 #include "init.h"
 
+int allocateVector(double **vector, int size) {
+	*vector = (double*)malloc(size * sizeof(double));
+	if (*vector == NULL) {
+		printf("Konnte keinen Speicher allokieren.\n");
+		return 1;
+	}
+
+	return 0;
+}
+
 void parameterError(char *param) {
 	printf("Error reading parameter %s\n", param);
 	exit(EXIT_FAILURE);

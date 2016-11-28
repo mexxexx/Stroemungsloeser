@@ -10,4 +10,7 @@ void readParameter(char *filename, char *simulationName, double *xlength, double
 	
 void initField(double *field, int imax, int jmax, double value);
 
+int allocateVector(double **vector, int size);
+
+void initFlag(int *FLAG, int imax, int jmax);
 #endif
