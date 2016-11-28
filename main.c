@@ -59,15 +59,6 @@ void printSnapshot(int currentSnapshot, double *U, double *V, double *P, int ima
 	}
 }
 
-void printMatrix(double *matrix, int imax, int jmax) {
-	for (int j = jmax+1; j>=0; j--) {
-		for (int i = 0; i < imax+2; i++) 
-			printf("%f ", matrix[POS2D(i, j, imax+2)]);
-		printf("\n");
-	}
-	printf("\n");
-}
-
 void initDrivenCavity(double *U, double *V, int imax, int jmax) {
 	for (int i = 1; i <= imax; i++) {
 		U[POS2D(i, jmax+1, imax+2)] = (2.0 - U[POS2D(i, jmax, imax+2)]);
@@ -136,8 +127,9 @@ int calculateFluidDynamics(double xlength, double ylength, int imax, int jmax, d
 
 int main(int argc, char** argv) {
 	char file[256];
+	char heightMap[256];
 	if (argc==1) {
-		printf("Bitte eine Datei auswählen, you faggot: ");
+		printf("Bitte eine Datei auswählen: ");
 		scanf("%s", file);
 	}
 	else
@@ -146,10 +138,13 @@ int main(int argc, char** argv) {
 	
 	int imax, jmax, itermax;
 	double xlength, ylength, delx, dely, delt, t_end, del_vec, tau, eps, omg, alpha, Re, GX, GY, UI, VI, PI;
-	readParameter(file, simulationName, &xlength, &ylength, &imax, &jmax, &delx, &dely, &delt, 
+	readParameter(file, simulationName, heightMap, &xlength, &ylength, &imax, &jmax, &delx, &dely, &delt, 
 							&del_vec, &t_end, &tau, &itermax, &eps, &omg, &alpha, &Re, &GX, &GY, &UI, &VI, &PI);
 	
 	createSimulationDirectory();
+	
+	char *FLAG = (char *)malloc((imax+2) * (jmax+2) * sizeof(char));
+	initFlag(heightMap, FLAG, imax, jmax);
 	
 	double *U, *V, *P;
 	if (allocateVector(&U, (imax+2) * (jmax+2)))
@@ -163,10 +158,11 @@ int main(int argc, char** argv) {
 		free(V);
 		return 1;
 	}
-	//TESTCOMMENTAR
-	calculateFluidDynamics(xlength, ylength, imax, jmax, delx, dely, delt, 
-					t_end, del_vec, tau, itermax, eps, omg, alpha, Re, GX, GY, UI, VI, PI, U, V, P);
 	
+	/*calculateFluidDynamics(xlength, ylength, imax, jmax, delx, dely, delt, 
+					t_end, del_vec, tau, itermax, eps, omg, alpha, Re, GX, GY, UI, VI, PI, U, V, P);*/
+	
+	free(FLAG);
 	free(U);
 	free(V);
 	free(P);

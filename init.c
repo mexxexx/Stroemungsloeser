@@ -1,6 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
 #include "init.h"
+
+#pragma pack(push, 1)
+
+struct BitMap
+{
+  int16_t Type;
+  int32_t Size;
+  int16_t Reserve1;
+  int16_t Reserve2;
+  int32_t OffBits;
+  int32_t biSize;
+  int32_t biWidth;
+  int32_t biHeight;
+  int16_t biPlanes;
+  int32_t biBitCount;
+  int32_t biCompression;
+  int32_t biSizeImage;
+  int32_t biXPelsPerMeter;
+  int32_t biYPelsPerMeter;
+  int32_t biClrUsed;
+  int32_t biClrImportant;
+} Header;
 
 int allocateVector(double **vector, int size) {
 	*vector = (double*)malloc(size * sizeof(double));
@@ -17,7 +41,7 @@ void parameterError(char *param) {
 	exit(EXIT_FAILURE);
 }
 
-void readParameter(char *filename, char *simulationName, double *xlength, double *ylength, int *imax, int *jmax, 
+void readParameter(char *filename, char *simulationName, char *heightMap, double *xlength, double *ylength, int *imax, int *jmax, 
 	double *delx, double *dely, double *delt, double *del_vec, double *t_end, double *tau, int *itermax,
 	double *eps, double *omg, double *alpha, double *Re, double *GX, double *GY, double *UI, double *VI, double *PI) {
 	FILE *f = fopen(filename, "r");
@@ -28,6 +52,9 @@ void readParameter(char *filename, char *simulationName, double *xlength, double
 	
 	if (fscanf(f, "%*s = %s\n", simulationName) != 1)
 		parameterError("simulationName");
+	if (fscanf(f, "%*s = %s\n", heightMap) != 1)
+		parameterError("heightMap");
+	
 	if (fscanf(f, "%*s = %lf\n", xlength) != 1)
 		parameterError("xlength");
 	if (fscanf(f, "%*s = %lf\n", ylength) != 1)
@@ -75,4 +102,107 @@ void initField(double *field, int imax, int jmax, double value) {
 	for (int j = 0; j <= jmax + 1; j++) 
 		for (int i = 0; i <= imax + 1; i++)
 			field[POS2D(i, j, imax + 2)] = value;
+}
+
+unsigned char *loadBitmapFile(char *filename)
+{
+    FILE *filePtr; //our file pointer
+    //BITMAPFILEHEADER bitmapFileHeader; //our bitmap file header
+    unsigned char *bitmapImage;  //store image data
+    int imageIdx=0;  //image index counter
+    unsigned char tempRGB;  //our swap variable
+
+    //open filename in read binary mode
+    filePtr = fopen(filename,"rb");
+    if (filePtr == NULL)
+        return NULL;
+	memset(&Header, 0, sizeof(Header));
+   
+	fread(&Header.Type, 2, 1, filePtr);
+	fread(&Header.Size, 4, 1, filePtr);
+	fread(&Header.Reserve1, 2, 1, filePtr);
+	fread(&Header.Reserve2, 2, 1, filePtr);
+	fread(&Header.OffBits, 4, 1, filePtr);
+	fread(&Header.biSize, 4, 1, filePtr);
+	fread(&Header.biWidth, 4, 1, filePtr);
+	fread(&Header.biHeight, 4, 1, filePtr);
+	fread(&Header.biPlanes, 2, 1, filePtr);
+	fread(&Header.biBitCount, 2, 1, filePtr);
+	fread(&Header.biCompression, 4, 1, filePtr);
+	fread(&Header.biSizeImage, 4, 1, filePtr);
+	fread(&Header.biXPelsPerMeter, 4, 1, filePtr);
+	fread(&Header.biYPelsPerMeter, 4, 1, filePtr);
+	fread(&Header.biClrUsed, 4, 1, filePtr);
+	fread(&Header.biClrImportant, 4, 1, filePtr);
+	printf("%i, %i\n", Header.biHeight, Header.biWidth);
+	printf("%i\n", Header.biSizeImage);
+	
+	//verify that this is a bmp file by check bitmap id
+    if (Header.Type !=0x4D42)
+    {
+        fclose(filePtr);
+        return NULL;
+    }
+
+    //move file point to the begging of bitmap data
+    fseek(filePtr, Header.OffBits, SEEK_SET);
+
+    //allocate enough memory for the bitmap image data
+    bitmapImage = (unsigned char*)malloc(Header.biSizeImage);
+
+    //verify memory allocation
+    if (!bitmapImage)
+    {
+        free(bitmapImage);
+        fclose(filePtr);
+        return NULL;
+    }
+
+    //read in the bitmap image data
+    fread(bitmapImage, sizeof(unsigned char), Header.biSizeImage, filePtr);
+
+    //make sure bitmap image data was read
+    if (bitmapImage == NULL)
+    {
+        fclose(filePtr);
+        return NULL;
+    }
+
+    //swap the r and b values to get RGB (bitmap is BGR)
+    for (imageIdx = 0;imageIdx < Header.biSizeImage;imageIdx+=3) // fixed semicolon
+    {
+        tempRGB = bitmapImage[imageIdx];
+        bitmapImage[imageIdx] = bitmapImage[imageIdx + 2];
+        bitmapImage[imageIdx + 2] = tempRGB;
+    }
+	
+	for (int imageIdx = 0; imageIdx < Header.biSizeImage; imageIdx+=3) 
+		printf ("%d %d %d\n", bitmapImage[imageIdx], bitmapImage[imageIdx+1], bitmapImage[imageIdx+2]);
+
+    //close file and return bitmap iamge data
+    fclose(filePtr);
+    return bitmapImage;
+}
+
+void initFlag(char *heightMap, char *FLAG, int imax, int jmax) {
+	unsigned char *data = loadBitmapFile(heightMap);
+	if (data == NULL) {
+		printf("Error reading Height Map");
+		free(FLAG);
+		exit(EXIT_FAILURE);
+	}
+	
+	for (int i = 1; i <= imax; i++) {
+		for (int j = 1; j <= imax; j++) {
+			FLAG[POS2D(i, j, imax+2)] = (data[POS2D(i * 3, j * 3, imax * 3)] == 0) ? 1 : 0;
+		}
+	}
+	/*for (int j = 1; j <= imax; j++) {
+		for (int i = 1; i <= imax; i++) {
+			printf ("%d ", data[(i-1) * 3 + (j-1) * imax * 3]);
+		}
+		printf("\n");
+	}*/
+	
+	free(data);
 }
