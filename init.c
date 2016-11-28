@@ -106,13 +106,9 @@ void initField(double *field, int imax, int jmax, double value) {
 
 unsigned char *loadBitmapFile(char *filename)
 {
-    FILE *filePtr; //our file pointer
-    //BITMAPFILEHEADER bitmapFileHeader; //our bitmap file header
-    unsigned char *bitmapImage;  //store image data
-    int imageIdx=0;  //image index counter
-    unsigned char tempRGB;  //our swap variable
-
-    //open filename in read binary mode
+    FILE *filePtr; 
+    unsigned char *bitmapImage; 
+    
     filePtr = fopen(filename,"rb");
     if (filePtr == NULL)
         return NULL;
@@ -134,52 +130,36 @@ unsigned char *loadBitmapFile(char *filename)
 	fread(&Header.biYPelsPerMeter, 4, 1, filePtr);
 	fread(&Header.biClrUsed, 4, 1, filePtr);
 	fread(&Header.biClrImportant, 4, 1, filePtr);
-	printf("%i, %i\n", Header.biHeight, Header.biWidth);
-	printf("%i\n", Header.biSizeImage);
 	
-	//verify that this is a bmp file by check bitmap id
     if (Header.Type !=0x4D42)
     {
         fclose(filePtr);
         return NULL;
     }
 
-    //move file point to the begging of bitmap data
     fseek(filePtr, Header.OffBits, SEEK_SET);
 
-    //allocate enough memory for the bitmap image data
-    bitmapImage = (unsigned char*)malloc(Header.biSizeImage);
+    int imageSize = Header.biWidth * Header.biHeight * 3;
+    bitmapImage = (unsigned char*)malloc(imageSize);
 
-    //verify memory allocation
     if (!bitmapImage)
     {
         free(bitmapImage);
         fclose(filePtr);
         return NULL;
     }
-
-    //read in the bitmap image data
-    fread(bitmapImage, sizeof(unsigned char), Header.biSizeImage, filePtr);
-
-    //make sure bitmap image data was read
-    if (bitmapImage == NULL)
+    
+    int padding = (4-(Header.biWidth * 3)%4)%4;
+    
+    for (int pixel = 0; pixel < imageSize/3; pixel++) 
     {
-        fclose(filePtr);
-        return NULL;
+        fread(&bitmapImage[3*pixel+1], 1, 1, filePtr);
+        fread(&bitmapImage[3*pixel+2], 1, 1, filePtr);
+        fread(&bitmapImage[3*pixel], 1, 1, filePtr);
+        
+		if ((pixel+1)%Header.biWidth==0)
+			fseek(filePtr, padding, SEEK_CUR);
     }
-
-    //swap the r and b values to get RGB (bitmap is BGR)
-    for (imageIdx = 0;imageIdx < Header.biSizeImage;imageIdx+=3) // fixed semicolon
-    {
-        tempRGB = bitmapImage[imageIdx];
-        bitmapImage[imageIdx] = bitmapImage[imageIdx + 2];
-        bitmapImage[imageIdx + 2] = tempRGB;
-    }
-	
-	for (int imageIdx = 0; imageIdx < Header.biSizeImage; imageIdx+=3) 
-		printf ("%d %d %d\n", bitmapImage[imageIdx], bitmapImage[imageIdx+1], bitmapImage[imageIdx+2]);
-
-    //close file and return bitmap iamge data
     fclose(filePtr);
     return bitmapImage;
 }
@@ -193,16 +173,43 @@ void initFlag(char *heightMap, char *FLAG, int imax, int jmax) {
 	}
 	
 	for (int i = 1; i <= imax; i++) {
-		for (int j = 1; j <= imax; j++) {
-			FLAG[POS2D(i, j, imax+2)] = (data[POS2D(i * 3, j * 3, imax * 3)] == 0) ? 1 : 0;
+		for (int j = 1; j <= jmax; j++) {
+			FLAG[POS2D(i, jmax+1-j, imax+2)] = (data[POS2D(i-1, j-1, imax)*3] == 0) ? 1 : 0;
 		}
 	}
-	/*for (int j = 1; j <= imax; j++) {
-		for (int i = 1; i <= imax; i++) {
-			printf ("%d ", data[(i-1) * 3 + (j-1) * imax * 3]);
+	
+	for (int i = 0; i <= imax+1; i++) {
+		FLAG[POS2D(i, 0, imax+2)]=25;
+		FLAG[POS2D(i, jmax+1, imax+2)]=25;
+	}
+	
+	for (int j = 0; j <= jmax+1; j++) {
+		FLAG[POS2D(0, j, imax+2)]=7;
+		FLAG[POS2D(imax+1, j, imax+2)]=7;
+	}
+	
+	for (int i = 1; i <= imax; i++) {  
+		for (int j = 1; j <= jmax; j++) {
+			int posij = POS2D(i, j, imax+2);
+			if (FLAG[posij]) {			
+				if (FLAG[posij+1]) //OSTEN
+					FLAG[posij] |= 17;
+				if (FLAG[posij-1]) //WESTEN
+					FLAG[posij] |= 9;
+				if (FLAG[posij+imax+2]) //NORDEN
+					FLAG[posij] |= 3;
+				if (FLAG[posij-imax-2]) //SÜDEN
+					FLAG[posij] |= 5;
+			}
+		}
+	}
+	
+	for (int j = 0; j <= jmax+1; j++) {
+		for (int i = 0; i <= imax+1; i++) { 
+			printf("%d ", FLAG[POS2D(i, j, imax+2)]);
 		}
 		printf("\n");
-	}*/
+	} 
 	
 	free(data);
 }
