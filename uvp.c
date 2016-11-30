@@ -4,8 +4,8 @@
 #include "boundary.h"
 #include "uvp.h"
 
-void solvePoisson(double *p, double *rhs, double omega, double epsilon, int itermax, 
-						double deltaX, double deltaY, int imax, int jmax) {
+void solvePoisson(double *p, double *rhs, char *FLAG, double omega, double epsilon, int itermax, 
+						double deltaX, double deltaY, int imax, int jmax, int numFluidCells) {
 	const double oneMinusOmega = 1 - omega;
 	const double oneOverDeltaXSquared = 1 / (deltaX * deltaX);
 	const double oneOverDeltaYSquared = 1 / (deltaY * deltaY);
@@ -26,24 +26,28 @@ void solvePoisson(double *p, double *rhs, double omega, double epsilon, int iter
 		for (j = 1; j <= jmax; j++) {
 			for (i = 1; i <= imax; i++) {				
 				ijlocation = POS2D(i, j, imaxPlus2);
-				p[ijlocation] = oneMinusOmega * p[ijlocation] + omegaRelaxation * (
-						oneOverDeltaXSquared * (p[ijlocation-1] + p[ijlocation+1]) + 
-						oneOverDeltaYSquared * (p[ijlocation-imaxPlus2] + p[ijlocation+imaxPlus2]) - 
-						rhs[ijlocation]);
+				if (FLAG[ijlocation]) {
+					p[ijlocation] = oneMinusOmega * p[ijlocation] + omegaRelaxation * (
+							oneOverDeltaXSquared * (p[ijlocation-1] + p[ijlocation+1]) + 
+							oneOverDeltaYSquared * (p[ijlocation-imaxPlus2] + p[ijlocation+imaxPlus2]) - 
+							rhs[ijlocation]);
+				}
 			}
 		}
 		
 		for (i = 1; i <= imax; i++) {
 			for (j = 1; j <= jmax; j++) {
-				ijlocation = POS2D(i, j, imaxPlus2);
-				twoPij = 2 * p[ijlocation];
-				sum = oneOverDeltaXSquared * (p[ijlocation+1] + p[ijlocation-1] - twoPij) +
-					oneOverDeltaYSquared * (p[ijlocation+imaxPlus2] + p[ijlocation-imaxPlus2] - twoPij) - 
-					rhs[ijlocation];
-				error += sum * sum;
+				if (FLAG[ijlocation]) {
+					ijlocation = POS2D(i, j, imaxPlus2);
+					twoPij = 2 * p[ijlocation];
+					sum = oneOverDeltaXSquared * (p[ijlocation+1] + p[ijlocation-1] - twoPij) +
+						oneOverDeltaYSquared * (p[ijlocation+imaxPlus2] + p[ijlocation-imaxPlus2] - twoPij) - 
+						rhs[ijlocation];
+					error += sum * sum;
+				}
 			}
 		}
-		error /= imax * jmax;
+		error /= numFluidCells;
 		error = sqrt(error);
 		if (PRINT_RES_DEBUG && ((iter < 50 && iter % 5 == 0) || (iter < 500 && iter % 50 == 0) || (iter < 1000 && iter % 100 == 0) || iter % 1000 == 0))
 			printf("#%i: %f\n", iter, error);
@@ -125,7 +129,7 @@ void computeFG(double *U, double *V, double *F, double *G, char *FLAG, int imax,
 					vijM = V[POS2D(i,j-1,imax+2)];
 					viPjM = V[POS2D(i+1,j-1,imax+2)];
 					
-					if (i < imax) {
+					if (i < imax && (!FLAG[POS2D(i, j, imax+2)] && !FLAG[POS2D(i+1, j, imax+2)])) {
 						ddux = oneOverDelX * oneOverDelX * (uiPj - uij - uij + uiMj);			
 						dduy = oneOverDelY * oneOverDelY * (uijP - uij - uij + uijM);
 						duux = oneOverDelX * 0.25 * (((uij+uiPj)*(uij+uiPj) - (uiMj+uij)*(uiMj+uij)) +
@@ -136,7 +140,7 @@ void computeFG(double *U, double *V, double *F, double *G, char *FLAG, int imax,
 						F[POS2D(i,j,imax+2)] = uij + delt * (1/Re * (ddux+dduy) - duux - duvy + GX);
 					}
 					
-					if (j < jmax) {				
+					if (j < jmax && (!FLAG[POS2D(i, j, imax+2)] && !FLAG[POS2D(i, j+1, imax+2)])) {				
 						ddvx = oneOverDelX * oneOverDelX * (viPj - vij - vij + viMj);			
 						ddvy = oneOverDelY * oneOverDelY * (vijP - vij - vij + vijM);
 						dvvy = oneOverDelY * 0.25 * (((vij+vijP)*(vij+vijP)-(vijM+vij)*(vijM+vij)) +
@@ -175,7 +179,7 @@ void computeRHS(double *F, double *G, double *rhs, int imax, int jmax, double de
 	}
 }
 
-void adapUV(double *U, double *V, double *F, double *G, double *P, int imax, 
+void adapUV(double *U, double *V, double *F, double *G, double *P, char *FLAG, int imax, 
 					int jmax, double delt, double delx, double dely, double *umax, double *vmax) {	
 	double oneOverDelX = 1 / delx;	
 	double oneOverDelY = 1 / dely;
@@ -183,7 +187,7 @@ void adapUV(double *U, double *V, double *F, double *G, double *P, int imax,
 	*umax = *vmax = -1;
 	for (int i = 1; i <= imax; i++) {
 		for (int j = 1; j <= jmax; j++) {
-			if (i < imax) {
+			if (i < imax && (!FLAG[POS2D(i, j, imax+2)] && !FLAG[POS2D(i+1, j, imax+2)])) {
 				u = F[POS2D(i, j, imax+2)] - delt * oneOverDelX * (P[POS2D(i+1, j, imax+2)] - P[POS2D(i, j, imax+2)]);
 				U[POS2D(i, j, imax+2)] = u;
 				u = fabs(u);

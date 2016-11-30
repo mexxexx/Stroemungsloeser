@@ -12,5 +12,5 @@ void initField(double *field, int imax, int jmax, double value);
 
 int allocateVector(double **vector, int size);
 
-void initFlag(char *heightMap, char *FLAG, int *imax, int *jmax);
+void initFlag(char *heightMap, char *FLAG, int imax, int jmax, int *numFluidCells);
 #endif

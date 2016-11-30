@@ -112,7 +112,7 @@ void initField(double *field, int imax, int jmax, double value) {
 			field[POS2D(i, j, imax + 2)] = value;
 }
 
-unsigned char *loadBitmapFile(char *filename, int *width, int *height) {
+unsigned char *loadBitmapFile(char *filename) {
     FILE *filePtr; 
     unsigned char *bitmapImage; 
     
@@ -146,8 +146,6 @@ unsigned char *loadBitmapFile(char *filename, int *width, int *height) {
 
     fseek(filePtr, Header.OffBits, SEEK_SET);
 
-	*width = Header.biWidth;
-	*height = Header.biHeight;
     int imageSize = Header.biWidth * Header.biHeight * 3;
     bitmapImage = (unsigned char*)malloc(imageSize);
 
@@ -173,52 +171,50 @@ unsigned char *loadBitmapFile(char *filename, int *width, int *height) {
     return bitmapImage;
 }
 
-void initFlag(char *heightMap, char *FLAG, int *imax, int *jmax) {
-	unsigned char *data = loadBitmapFile(heightMap, imax, jmax);
+void initFlag(char *heightMap, char *FLAG, int imax, int jmax, int *numFluidCells) {
+	unsigned char *data = loadBitmapFile(heightMap);
 	if (data == NULL) {
 		printf("Error reading Height Map");
 		free(FLAG);
 		exit(EXIT_FAILURE);
 	}
 	
-	for (int i = 1; i <= (*imax); i++) {
-		for (int j = 1; j <= (*jmax); j++) {
-			FLAG[POS2D(i, (*jmax)+1-j, (*imax)+2)] = (data[POS2D(i-1, j-1, (*imax))*3] == 0) ? 1 : 0;
+	(*numFluidCells)=0;
+	for (int i = 1; i <= imax; i++) {
+		for (int j = 1; j <= jmax; j++) {
+			if (data[POS2D(i-1, j-1, imax)*3]) {
+				FLAG[POS2D(i, j, imax+2)] = 1;
+				(*numFluidCells)++;
+			}
+			else
+				FLAG[POS2D(i, j, imax+2)] = 0;
 		}
 	}
+	free(data);
 	
-	for (int i = 0; i <= (*imax)+1; i++) {
-		FLAG[POS2D(i, 0, (*imax)+2)]=25;
-		FLAG[POS2D(i, (*jmax)+1, (*imax)+2)]=25;
+	for (int i = 0; i <= imax+1; i++) {
+		FLAG[POS2D(i, 0, imax+2)]=25;
+		FLAG[POS2D(i, jmax+1, imax+2)]=25;
 	}
 	
-	for (int j = 0; j <= (*jmax)+1; j++) {
-		FLAG[POS2D(0, j, (*imax)+2)]=7;
-		FLAG[POS2D((*imax)+1, j, (*imax)+2)]=7;
+	for (int j = 0; j <= jmax+1; j++) {
+		FLAG[POS2D(0, j, imax+2)]=7;
+		FLAG[POS2D(imax+1, j, imax+2)]=7;
 	}
 	
-	for (int i = 1; i <= (*imax); i++) {  
-		for (int j = 1; j <= (*jmax); j++) {
-			int posij = POS2D(i, j, (*imax)+2);
+	for (int i = 1; i <= imax; i++) {  
+		for (int j = 1; j <= jmax; j++) {
+			int posij = POS2D(i, j, imax+2);
 			if (FLAG[posij]) {			
 				if (FLAG[posij+1]) //OSTEN
 					FLAG[posij] |= 17;
 				if (FLAG[posij-1]) //WESTEN
 					FLAG[posij] |= 9;
-				if (FLAG[posij+(*imax)+2]) //NORDEN
+				if (FLAG[posij+imax+2]) //NORDEN
 					FLAG[posij] |= 3;
-				if (FLAG[posij-(*imax)-2]) //SÜDEN
+				if (FLAG[posij-imax-2]) //SÜDEN
 					FLAG[posij] |= 5;
 			}
 		}
 	}
-	
-	for (int j = 0; j <= (*jmax)+1; j++) {
-		for (int i = 0; i <= (*imax)+1; i++) { 
-			printf("%d ", FLAG[POS2D(i, j, (*imax)+2)]);
-		}
-		printf("\n");
-	} 
-	
-	free(data);
 }
