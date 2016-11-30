@@ -122,9 +122,10 @@ int main(int argc, char** argv) {
 		printf("Bitte eine Datei auswählen: ");
 		scanf("%s", file);
 	}
-	else
+	else	{
 		sprintf(file, "%s", argv[1]);
-	
+		sprintf(problem, "%s", argv[2]);	
+	}
 	
 	int imax, jmax, itermax, wl, wr, wt, wb, numFluidCells;
 	double xlength, ylength, delx, dely, delt, t_end, del_vec, tau, eps, omg, alpha, Re, GX, GY, UI, VI, PI;

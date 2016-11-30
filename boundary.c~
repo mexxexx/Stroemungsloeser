@@ -174,7 +174,7 @@ void setBoundaryCond(double *U, double *V, char *FLAG, int imax, int jmax,int wl
 }
 
 
-void obstacleBC(double *p, char *FLAG, int imax, int jmax, double deltaX, double deltaY){
+void obstacleBC(double *p, int *FLAG, int imax, int jmax, double deltaX, double deltaY){
 
 
 double oneOverDeltaXSquaredPlusDeltaYSquared=(1/(deltaX*deltaX+deltaY*deltaY));
