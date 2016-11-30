@@ -113,7 +113,6 @@ void setBoundaryCond(double *U, double *V, char *FLAG, int imax, int jmax,int wl
 			}
 			break;
 		case 3:
-
 			for (int i = 1; i <= imax; i++) {
 				V[POS2D(i, 0, imax+2)] = V[POS2D(i, 1, imax+2)];
 				U[POS2D(i, 0, imax+2)] = U[POS2D(i, 1, imax+2)];
@@ -175,12 +174,9 @@ void setBoundaryCond(double *U, double *V, char *FLAG, int imax, int jmax,int wl
 
 
 void obstacleBC(double *p, char *FLAG, int imax, int jmax, double deltaX, double deltaY){
+	double oneOverDeltaXSquaredPlusDeltaYSquared=(1/(deltaX*deltaX+deltaY*deltaY));
 
-
-double oneOverDeltaXSquaredPlusDeltaYSquared=(1/(deltaX*deltaX+deltaY*deltaY));
-
-
-for (int i = 1; i <= imax; i++) {
+	for (int i = 1; i <= imax; i++) {
 		for (int j = 1; j <= jmax; j++) {
 			switch(FLAG[POS2D(i,j,imax+2)]){
 				case 29:		/*29 entspricht B_N Nord-Kantenzelle*/
@@ -209,10 +205,7 @@ for (int i = 1; i <= imax; i++) {
 					break;
 			}
 		}
-	}			
-
-
-
+	}		
 }
 
 
@@ -228,9 +221,13 @@ void initDrivenCavity(double *U, double *V, int imax, int jmax) {
 }
 
 void initKarman(double *U, double *V, int imax, int jmax) {
-	for (int j = 1; j <= jmax; j++) {
-		U[POS2D(0,j,imax+2)]=(2.0 - U[POS2D(1,j,imax+2)]);
-		V[POS2D(0,j,imax+2)]=0;				
+	/*for (int j = 1; j <= jmax; j++) {
+		U[POS2D(0,j,imax+2)]=1.0;
+		V[POS2D(0,j,imax+2)]= -V[POS2D(1,j,imax+2)];				
+	}*/
+	for (int i = 1; i <= imax; i++) {
+		V[POS2D(i,0,imax+2)] = -0;
+		U[POS2D(i,0,imax+2)] = -U[POS2D(i,1,imax+2)];				
 	}
 }
 
