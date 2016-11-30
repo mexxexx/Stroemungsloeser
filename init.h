@@ -6,11 +6,11 @@
 
 void readParameter(char *filename, char *simulationName, char *heightMap, double *xlength, double *ylength, int *imax, int *jmax, 
 	double *delx, double *dely, double *delt, double *del_vec, double *t_end, double *tau, int *itermax,
-	double *eps, double *omg, double *alpha, double *Re, double *GX, double *GY, double *UI, double *VI, double *PI);
+	double *eps, double *omg, double *alpha, double *Re, double *GX, double *GY, double *UI, double *VI, double *PI, int *wl, int *wr, int *wt, int *wb);
 	
 void initField(double *field, int imax, int jmax, double value);
 
 int allocateVector(double **vector, int size);
 
-void initFlag(char *heightMap, char *FLAG, int imax, int jmax);
+void initFlag(char *heightMap, char *FLAG, int *imax, int *jmax);
 #endif

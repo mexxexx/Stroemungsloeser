@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "init.h"
 #include "boundary.h"
 
@@ -27,17 +30,172 @@ void applyHomogenousNeumannBC(double *p, int imax, int jmax) {
 	}
 }
 
-void setBoundaryCont(double *U, double *V, int imax, int jmax) {
-	for (int i = 1; i <= imax; i++) {
-		V[POS2D(i, 0, imax+2)] = 0;
-		V[POS2D(i, jmax, imax+2)] = 0;
-		U[POS2D(i, 0, imax+2)] = -U[POS2D(i, 1, imax+2)];
-		U[POS2D(i, jmax+1, imax+2)] = -U[POS2D(i, jmax, imax+2)];
+void setBoundaryCond(double *U, double *V, char *FLAG, int imax, int jmax,int wl, int wr, int wt, int wb) {
+	switch(wl){
+		case 1:
+			for (int j = 1; j <= jmax; j++) {
+				U[POS2D(0, j, imax+2)] = 0;
+				V[POS2D(0, j, imax+2)] = -V[POS2D(1, j, imax+2)];
+			}
+			break;
+		case 2:
+			for (int j = 1; j <= jmax; j++) {
+				U[POS2D(0,j,imax+2)]=0;
+				V[POS2D(0,j,imax+2)]=V[POS2D(1,j,imax+2)];				
+			}
+			break;
+		case 3:
+			for (int j = 1; j <= jmax; j++) {
+				U[POS2D(0,j,imax+2)]=U[POS2D(1,j,imax+2)];
+				V[POS2D(0,j,imax+2)]=V[POS2D(1,j,imax+2)];				
+			}
+			break;
+		default: 
+			printf("Randbedingung nicht zulaessig.\n"); 
+			exit(EXIT_FAILURE);
+			break;
 	}
+
+
+	switch(wr){
+		case 1:
+			for (int j = 1; j <= jmax; j++) {
+				U[POS2D(imax, j, imax+2)] = 0;
+				V[POS2D(imax+1, j, imax+2)] = -V[POS2D(imax, j, imax+2)];
+			}
+			break;
+		case 2:		
+			for (int j = 1; j <= jmax; j++) {
+				U[POS2D(imax, j, imax+2)] = 0;
+				V[POS2D(imax+1, j, imax+2)] = V[POS2D(imax, j, imax+2)];
+			}
+			break;
+		case 3:
+			for (int j = 1; j <= jmax; j++) {
+				U[POS2D(imax, j, imax+2)] = U[POS2D(imax-1, j, imax+2)];
+				V[POS2D(imax+1, j, imax+2)] = V[POS2D(imax, j, imax+2)];
+			}
+			break;
+	}
+
+	switch(wt){
+		case 1:
+			for (int i = 1; i <= imax; i++) {
+				V[POS2D(i, jmax, imax+2)] = 0;
+				U[POS2D(i, jmax+1, imax+2)] = -U[POS2D(i, jmax, imax+2)];
+			}
+			break;
+		case 2:
+			for (int i = 1; i <= imax; i++) {
+				V[POS2D(i, jmax, imax+2)] = 0;
+				U[POS2D(i, jmax+1, imax+2)] = U[POS2D(i, jmax, imax+2)];
+			}
+			break;
+		case 3:
+			for (int i = 1; i <= imax; i++) {
+				V[POS2D(i, jmax, imax+2)] = V[POS2D(i, jmax-1, imax+2)];
+				U[POS2D(i, jmax+1, imax+2)] = U[POS2D(i, jmax, imax+2)];
+			}
+			break;			
+	}
+
+	switch(wb){
+		case 1:
+			for (int i = 1; i <= imax; i++) {
+				V[POS2D(i, 0, imax+2)] = 0;
+				U[POS2D(i, 0, imax+2)] = -U[POS2D(i, 1, imax+2)];
+			}
+			break;
+		case 2:
+			for (int i = 1; i <= imax; i++) {
+				V[POS2D(i, 0, imax+2)] = 0;
+				U[POS2D(i, 0, imax+2)] = U[POS2D(i, 1, imax+2)];
+			}
+			break;
+		case 3:
+
+			for (int i = 1; i <= imax; i++) {
+				V[POS2D(i, 0, imax+2)] = V[POS2D(i, 1, imax+2)];
+				U[POS2D(i, 0, imax+2)] = U[POS2D(i, 1, imax+2)];
+			}
+			break;
+	}
+
+	for (int i = 1; i <= imax; i++) {
+		for (int j = 1; j <= jmax; j++) {
+			switch(FLAG[POS2D(i,j,imax+2)]){
+				case 29:		/*29 entspricht B_N Nord-Kantenzelle*/
+					U[POS2D(i,j,imax+2)]=-U[POS2D(i,j+1,imax+2)];
+					U[POS2D(i-1,j,imax+2)]=-U[POS2D(i-1,j+1,imax+2)];
+					V[POS2D(i,j,imax+2)]=0;
+					break;
+				case 27:		/*27 entspricht B_S Sued-Kantenzelle*/
+					U[POS2D(i,j,imax+2)]=-U[POS2D(i,j-1,imax+2)];
+					U[POS2D(i-1,j,imax+2)]=-U[POS2D(i-1,j-1,imax+2)];
+					V[POS2D(i,j-1,imax+2)]=0;
+					break;	
+				case 23:		/*23 entspricht B_W West-Kantenzelle*/
+					V[POS2D(i,j,imax+2)]=-V[POS2D(i-1,j,imax+2)];
+					V[POS2D(i,j-1,imax+2)]=-V[POS2D(i-1,j-1,imax+2)];
+					U[POS2D(i-1,j,imax+2)]=0;
+					break;		
+				case 15:		/*15 entspricht B_O Ost-Kantenzelle*/
+					V[POS2D(i,j,imax+2)]=-V[POS2D(i+1,j,imax+2)];
+					V[POS2D(i,j-1,imax+2)]=-V[POS2D(i+1,j-1,imax+2)];
+					U[POS2D(i,j,imax+2)]=0;
+					break;		
+				case 13:		/*13 entspricht B_NO Nord-Ost-Kantenzelle*/
+					U[POS2D(i-1,j,imax+2)]=-U[POS2D(i-1,j+1,imax+2)];
+					V[POS2D(i,j-1,imax+2)]=-V[POS2D(i+1,j-1,imax+2)];
+					U[POS2D(i,j,imax+2)]=0;
+					V[POS2D(i,j,imax+2)]=0;
+					break;			
+				case 11:		/*11 entspricht B_SO Sued-Ost-Kantenzelle*/
+					U[POS2D(i-1,j,imax+2)]=-U[POS2D(i-1,j-1,imax+2)];
+					V[POS2D(i,j,imax+2)]=-V[POS2D(i+1,j,imax+2)];
+					U[POS2D(i,j,imax+2)]=0;
+					V[POS2D(i,j-1,imax+2)]=0;
+					break;	
+				case 21:		/*21 entspricht B_NW Nord-West-Kantenzelle*/
+					U[POS2D(i,j,imax+2)]=-U[POS2D(i,j+1,imax+2)];
+					V[POS2D(i,j-1,imax+2)]=-V[POS2D(i-1,j-1,imax+2)];
+					U[POS2D(i-1,j,imax+2)]=0;
+					V[POS2D(i,j,imax+2)]=0;
+					break;
+				case 19:		/*19 entspricht B_SW Sued-West-Kantenzelle*/
+					U[POS2D(i,j,imax+2)]=-U[POS2D(i,j-1,imax+2)];
+					V[POS2D(i,j,imax+2)]=-V[POS2D(i-1,j,imax+2)];
+					U[POS2D(i-1,j,imax+2)]=0;
+					V[POS2D(i,j-1,imax+2)]=0;
+					break;
+			}
+		}
+	}		
+}
+
+void initDrivenCavity(double *U, double *V, int imax, int jmax) {
+	for (int i = 1; i <= imax; i++) {
+		U[POS2D(i, jmax+1, imax+2)] = (2.0 - U[POS2D(i, jmax, imax+2)]);
+		//U[POS2D(i, 0, imax+2)] = -(20.0 - U[POS2D(i, 1, imax+2)]);
+	}
+	/*for (int j = 1; j <= jmax; j++) {
+		V[POS2D(0, j, imax+2)] = (20.0 - V[POS2D(1, j, imax+2)]);
+		V[POS2D(imax+1, j, imax+2)] = -(20.0 - V[POS2D(imax, j, imax+2)]);
+	}*/
+}
+
+void initKarman(double *U, double *V, int imax, int jmax) {
 	for (int j = 1; j <= jmax; j++) {
-		U[POS2D(0, j, imax+2)] = 0;
-		U[POS2D(imax, j, imax+2)] = 0;
-		V[POS2D(0, j, imax+2)] = -V[POS2D(1, j, imax+2)];
-		V[POS2D(imax+1, j, imax+2)] = -V[POS2D(imax, j, imax+2)];
+		U[POS2D(0,j,imax+2)]=(2.0 - U[POS2D(1,j,imax+2)]);
+		V[POS2D(0,j,imax+2)]=0;				
+	}
+}
+
+void setSpecialBoundaryCond (double *U, double*V, int imax, int jmax, char *problem){
+	if((strcmp(problem,"Driven cavity") == 0) || (strcmp(problem,"DC") == 0) || (strcmp(problem,"driven cavity") == 0)){
+		initDrivenCavity(U, V, imax, jmax);
+	}
+	else if((strcmp(problem,"Karman") == 0) || (strcmp(problem,"karman") == 0) || (strcmp(problem,"KW") == 0)){
+		initKarman(U, V, imax, jmax);
 	}
 }

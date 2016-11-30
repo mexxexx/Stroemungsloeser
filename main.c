@@ -59,20 +59,9 @@ void printSnapshot(int currentSnapshot, double *U, double *V, double *P, int ima
 	}
 }
 
-void initDrivenCavity(double *U, double *V, int imax, int jmax) {
-	for (int i = 1; i <= imax; i++) {
-		U[POS2D(i, jmax+1, imax+2)] = (2.0 - U[POS2D(i, jmax, imax+2)]);
-		//U[POS2D(i, 0, imax+2)] = -(20.0 - U[POS2D(i, 1, imax+2)]);
-	}
-	/*for (int j = 1; j <= jmax; j++) {
-		V[POS2D(0, j, imax+2)] = (20.0 - V[POS2D(1, j, imax+2)]);
-		V[POS2D(imax+1, j, imax+2)] = -(20.0 - V[POS2D(imax, j, imax+2)]);
-	}*/
-}
-
 int calculateFluidDynamics(double xlength, double ylength, int imax, int jmax, double delx, double dely, 
 		double delt, double t_end, double del_vec, double tau, int itermax, double eps, double omg, 
-		double alpha, double Re, double GX, double GY, double UI, double VI, double PI, double *U, double *V, double *P) {
+		double alpha, double Re, double GX, double GY, double UI, double VI, double PI, double *U, double *V, double *P, char *FLAG, int wl, int wr, int wt, int wb, char* problem) {
 	initField(U, imax, jmax, UI);
 	initField(V, imax, jmax, VI);
 	initField(P, imax, jmax, PI);
@@ -99,10 +88,10 @@ int calculateFluidDynamics(double xlength, double ylength, int imax, int jmax, d
 	
 	while (t < t_end) {
 		computeDelt(&delt, imax, jmax, delx, dely, umax, vmax, Re, tau);
-		setBoundaryCont(U, V, imax, jmax);
-		initDrivenCavity(U, V, imax, jmax);
+		setBoundaryCond(U, V, FLAG, imax, jmax, wl, wr, wt, wb);
+		setSpecialBoundaryCond(U, V, imax, jmax, problem);
 		
-		computeFG(U, V, F, G, imax, jmax, delt, delx, dely, GX, GY, alpha, Re);
+		computeFG(U, V, F, G, FLAG, imax, jmax, delt, delx, dely, GX, GY, alpha, Re);
 		computeRHS(F, G, rhs, imax, jmax, delt, delx, dely);
 		solvePoisson(P, rhs, omg, eps, itermax, delx, dely, imax, jmax);
 		
@@ -127,6 +116,7 @@ int calculateFluidDynamics(double xlength, double ylength, int imax, int jmax, d
 
 int main(int argc, char** argv) {
 	char file[256];
+	char problem[] = "problem";
 	char heightMap[256];
 	if (argc==1) {
 		printf("Bitte eine Datei auswählen: ");
@@ -136,15 +126,15 @@ int main(int argc, char** argv) {
 		sprintf(file, "%s", argv[1]);
 	
 	
-	int imax, jmax, itermax;
+	int imax, jmax, itermax, wl, wr, wt, wb;
 	double xlength, ylength, delx, dely, delt, t_end, del_vec, tau, eps, omg, alpha, Re, GX, GY, UI, VI, PI;
 	readParameter(file, simulationName, heightMap, &xlength, &ylength, &imax, &jmax, &delx, &dely, &delt, 
-							&del_vec, &t_end, &tau, &itermax, &eps, &omg, &alpha, &Re, &GX, &GY, &UI, &VI, &PI);
+							&del_vec, &t_end, &tau, &itermax, &eps, &omg, &alpha, &Re, &GX, &GY, &UI, &VI, &PI, &wl, &wr, &wt, &wb);
 	
 	createSimulationDirectory();
 	
 	char *FLAG = (char *)malloc((imax+2) * (jmax+2) * sizeof(char));
-	initFlag(heightMap, FLAG, imax, jmax);
+	initFlag(heightMap, FLAG, &imax, &jmax);
 	
 	double *U, *V, *P;
 	if (allocateVector(&U, (imax+2) * (jmax+2)))
@@ -160,7 +150,7 @@ int main(int argc, char** argv) {
 	}
 	
 	/*calculateFluidDynamics(xlength, ylength, imax, jmax, delx, dely, delt, 
-					t_end, del_vec, tau, itermax, eps, omg, alpha, Re, GX, GY, UI, VI, PI, U, V, P);*/
+					t_end, del_vec, tau, itermax, eps, omg, alpha, Re, GX, GY, UI, VI, PI, U, V, P, FLAG, wl, wr, wt, wb, problem);*/
 	
 	free(FLAG);
 	free(U);

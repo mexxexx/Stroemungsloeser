@@ -43,7 +43,7 @@ void parameterError(char *param) {
 
 void readParameter(char *filename, char *simulationName, char *heightMap, double *xlength, double *ylength, int *imax, int *jmax, 
 	double *delx, double *dely, double *delt, double *del_vec, double *t_end, double *tau, int *itermax,
-	double *eps, double *omg, double *alpha, double *Re, double *GX, double *GY, double *UI, double *VI, double *PI) {
+	double *eps, double *omg, double *alpha, double *Re, double *GX, double *GY, double *UI, double *VI, double *PI, int *wl, int *wr, int *wt, int *wb) {
 	FILE *f = fopen(filename, "r");
 	if (f == NULL) {
 		printf("Error opening parameter file\n");
@@ -94,6 +94,14 @@ void readParameter(char *filename, char *simulationName, char *heightMap, double
 		parameterError("VI");
 	if (fscanf(f, "%*s = %lf\n", PI) != 1)
 		parameterError("PI");
+	if (fscanf(f, "%*s = %i\n", wl) != 1)
+		parameterError("wl");
+	if (fscanf(f, "%*s = %i\n", wr) != 1)
+		parameterError("wr");
+	if (fscanf(f, "%*s = %i\n", wt) != 1)
+		parameterError("wt");
+	if (fscanf(f, "%*s = %i\n", wb) != 1)
+		parameterError("wb");
 		
 	fclose(f);
 }
@@ -104,8 +112,7 @@ void initField(double *field, int imax, int jmax, double value) {
 			field[POS2D(i, j, imax + 2)] = value;
 }
 
-unsigned char *loadBitmapFile(char *filename)
-{
+unsigned char *loadBitmapFile(char *filename, int *width, int *height) {
     FILE *filePtr; 
     unsigned char *bitmapImage; 
     
@@ -139,6 +146,8 @@ unsigned char *loadBitmapFile(char *filename)
 
     fseek(filePtr, Header.OffBits, SEEK_SET);
 
+	*width = Header.biWidth;
+	*height = Header.biHeight;
     int imageSize = Header.biWidth * Header.biHeight * 3;
     bitmapImage = (unsigned char*)malloc(imageSize);
 
@@ -164,49 +173,49 @@ unsigned char *loadBitmapFile(char *filename)
     return bitmapImage;
 }
 
-void initFlag(char *heightMap, char *FLAG, int imax, int jmax) {
-	unsigned char *data = loadBitmapFile(heightMap);
+void initFlag(char *heightMap, char *FLAG, int *imax, int *jmax) {
+	unsigned char *data = loadBitmapFile(heightMap, imax, jmax);
 	if (data == NULL) {
 		printf("Error reading Height Map");
 		free(FLAG);
 		exit(EXIT_FAILURE);
 	}
 	
-	for (int i = 1; i <= imax; i++) {
-		for (int j = 1; j <= jmax; j++) {
-			FLAG[POS2D(i, jmax+1-j, imax+2)] = (data[POS2D(i-1, j-1, imax)*3] == 0) ? 1 : 0;
+	for (int i = 1; i <= (*imax); i++) {
+		for (int j = 1; j <= (*jmax); j++) {
+			FLAG[POS2D(i, (*jmax)+1-j, (*imax)+2)] = (data[POS2D(i-1, j-1, (*imax))*3] == 0) ? 1 : 0;
 		}
 	}
 	
-	for (int i = 0; i <= imax+1; i++) {
-		FLAG[POS2D(i, 0, imax+2)]=25;
-		FLAG[POS2D(i, jmax+1, imax+2)]=25;
+	for (int i = 0; i <= (*imax)+1; i++) {
+		FLAG[POS2D(i, 0, (*imax)+2)]=25;
+		FLAG[POS2D(i, (*jmax)+1, (*imax)+2)]=25;
 	}
 	
-	for (int j = 0; j <= jmax+1; j++) {
-		FLAG[POS2D(0, j, imax+2)]=7;
-		FLAG[POS2D(imax+1, j, imax+2)]=7;
+	for (int j = 0; j <= (*jmax)+1; j++) {
+		FLAG[POS2D(0, j, (*imax)+2)]=7;
+		FLAG[POS2D((*imax)+1, j, (*imax)+2)]=7;
 	}
 	
-	for (int i = 1; i <= imax; i++) {  
-		for (int j = 1; j <= jmax; j++) {
-			int posij = POS2D(i, j, imax+2);
+	for (int i = 1; i <= (*imax); i++) {  
+		for (int j = 1; j <= (*jmax); j++) {
+			int posij = POS2D(i, j, (*imax)+2);
 			if (FLAG[posij]) {			
 				if (FLAG[posij+1]) //OSTEN
 					FLAG[posij] |= 17;
 				if (FLAG[posij-1]) //WESTEN
 					FLAG[posij] |= 9;
-				if (FLAG[posij+imax+2]) //NORDEN
+				if (FLAG[posij+(*imax)+2]) //NORDEN
 					FLAG[posij] |= 3;
-				if (FLAG[posij-imax-2]) //SÜDEN
+				if (FLAG[posij-(*imax)-2]) //SÜDEN
 					FLAG[posij] |= 5;
 			}
 		}
 	}
 	
-	for (int j = 0; j <= jmax+1; j++) {
-		for (int i = 0; i <= imax+1; i++) { 
-			printf("%d ", FLAG[POS2D(i, j, imax+2)]);
+	for (int j = 0; j <= (*jmax)+1; j++) {
+		for (int i = 0; i <= (*imax)+1; i++) { 
+			printf("%d ", FLAG[POS2D(i, j, (*imax)+2)]);
 		}
 		printf("\n");
 	} 
