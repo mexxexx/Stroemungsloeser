@@ -10,7 +10,7 @@
 /* Löst das LGS Laplace(p)=rhs mit einem effizienten SOR Verfahren, 
  * wobei p eine (imax+2) x (jmax+2) Matrix ist die imax bzw. jmax 
  * innere Gitterpunkte und eine Ghost-Schicht besitzt. */
-void solvePoisson(double *p, double *rhs, char *FLAG, double omega, double epsilon, int itermax, 
+void solvePoisson(double *p, double *rhs, int *FLAG, double omega, double epsilon, int itermax, 
 					double deltaX, double deltaY, int imax, int jmax);
 
 void computeDelt(double *delt, int imax, int jmax, double delx, double dely, 

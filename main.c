@@ -93,7 +93,7 @@ int calculateFluidDynamics(double xlength, double ylength, int imax, int jmax, d
 		
 		computeFG(U, V, F, G, FLAG, imax, jmax, delt, delx, dely, GX, GY, alpha, Re);
 		computeRHS(F, G, rhs, imax, jmax, delt, delx, dely);
-		solvePoisson(P, rhs, omg, eps, itermax, delx, dely, imax, jmax);
+		solvePoisson(P, rhs, FLAG, omg, eps, itermax, delx, dely, imax, jmax);
 		
 		adapUV(U, V, F, G, P, imax, jmax, delt, delx, dely, &umax, &vmax); 
 		
@@ -122,9 +122,10 @@ int main(int argc, char** argv) {
 		printf("Bitte eine Datei auswählen: ");
 		scanf("%s", file);
 	}
-	else
+	else	{
 		sprintf(file, "%s", argv[1]);
-	
+		sprintf(problem, "%s", argv[2]);	
+	}
 	
 	int imax, jmax, itermax, wl, wr, wt, wb;
 	double xlength, ylength, delx, dely, delt, t_end, del_vec, tau, eps, omg, alpha, Re, GX, GY, UI, VI, PI;

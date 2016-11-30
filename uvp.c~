@@ -4,7 +4,7 @@
 #include "boundary.h"
 #include "uvp.h"
 
-void solvePoisson(double *p, double *rhs, char *FLAG, double omega, double epsilon, int itermax, 
+void solvePoisson(double *p, double *rhs, int *FLAG, double omega, double epsilon, int itermax, 
 						double deltaX, double deltaY, int imax, int jmax) {
 	const double oneMinusOmega = 1 - omega;
 	const double oneOverDeltaXSquared = 1 / (deltaX * deltaX);

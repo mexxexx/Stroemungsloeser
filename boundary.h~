@@ -13,6 +13,6 @@ void initDrivenCavity(double *U, double *V, int imax, int jmax);
 
 void initKarman(double *U, double *V, int imax, int jmax);
 
-void obstacleBC(double *p, char *FLAG, int imax, int jmax, double deltaX, double deltaY);
+void obstacleBC(double *p, int *FLAG, int imax, int jmax, double deltaX, double deltaY);
 
 #endif
