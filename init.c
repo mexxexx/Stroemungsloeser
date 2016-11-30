@@ -182,12 +182,12 @@ void initFlag(char *heightMap, char *FLAG, int imax, int jmax, int *numFluidCell
 	(*numFluidCells)=0;
 	for (int i = 1; i <= imax; i++) {
 		for (int j = 1; j <= jmax; j++) {
-			if (data[POS2D(i-1, j-1, imax)*3]) {
+			if (!data[POS2D(i-1, j-1, imax)*3]) 
 				FLAG[POS2D(i, j, imax+2)] = 1;
+			else {
+				FLAG[POS2D(i, j, imax+2)] = 0;
 				(*numFluidCells)++;
 			}
-			else
-				FLAG[POS2D(i, j, imax+2)] = 0;
 		}
 	}
 	free(data);

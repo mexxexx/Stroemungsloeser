@@ -124,45 +124,45 @@ void setBoundaryCond(double *U, double *V, char *FLAG, int imax, int jmax,int wl
 	for (int i = 1; i <= imax; i++) {
 		for (int j = 1; j <= jmax; j++) {
 			switch(FLAG[POS2D(i,j,imax+2)]){
-				case 29:		/*29 entspricht B_N Nord-Kantenzelle*/
+				case 29:		//29 entspricht B_N Nord-Kantenzelle
 					U[POS2D(i,j,imax+2)]=-U[POS2D(i,j+1,imax+2)];
 					U[POS2D(i-1,j,imax+2)]=-U[POS2D(i-1,j+1,imax+2)];
 					V[POS2D(i,j,imax+2)]=0;
 					break;
-				case 27:		/*27 entspricht B_S Sued-Kantenzelle*/
+				case 27:		//27 entspricht B_S Sued-Kantenzelle
 					U[POS2D(i,j,imax+2)]=-U[POS2D(i,j-1,imax+2)];
 					U[POS2D(i-1,j,imax+2)]=-U[POS2D(i-1,j-1,imax+2)];
 					V[POS2D(i,j-1,imax+2)]=0;
 					break;	
-				case 23:		/*23 entspricht B_W West-Kantenzelle*/
+				case 23:		//23 entspricht B_W West-Kantenzelle
 					V[POS2D(i,j,imax+2)]=-V[POS2D(i-1,j,imax+2)];
 					V[POS2D(i,j-1,imax+2)]=-V[POS2D(i-1,j-1,imax+2)];
 					U[POS2D(i-1,j,imax+2)]=0;
 					break;		
-				case 15:		/*15 entspricht B_O Ost-Kantenzelle*/
+				case 15:		//15 entspricht B_O Ost-Kantenzelle
 					V[POS2D(i,j,imax+2)]=-V[POS2D(i+1,j,imax+2)];
 					V[POS2D(i,j-1,imax+2)]=-V[POS2D(i+1,j-1,imax+2)];
 					U[POS2D(i,j,imax+2)]=0;
 					break;		
-				case 13:		/*13 entspricht B_NO Nord-Ost-Kantenzelle*/
+				case 13:		//13 entspricht B_NO Nord-Ost-Kantenzelle
 					U[POS2D(i-1,j,imax+2)]=-U[POS2D(i-1,j+1,imax+2)];
 					V[POS2D(i,j-1,imax+2)]=-V[POS2D(i+1,j-1,imax+2)];
 					U[POS2D(i,j,imax+2)]=0;
 					V[POS2D(i,j,imax+2)]=0;
 					break;			
-				case 11:		/*11 entspricht B_SO Sued-Ost-Kantenzelle*/
+				case 11:		//11 entspricht B_SO Sued-Ost-Kantenzelle
 					U[POS2D(i-1,j,imax+2)]=-U[POS2D(i-1,j-1,imax+2)];
 					V[POS2D(i,j,imax+2)]=-V[POS2D(i+1,j,imax+2)];
 					U[POS2D(i,j,imax+2)]=0;
 					V[POS2D(i,j-1,imax+2)]=0;
 					break;	
-				case 21:		/*21 entspricht B_NW Nord-West-Kantenzelle*/
+				case 21:		//21 entspricht B_NW Nord-West-Kantenzelle
 					U[POS2D(i,j,imax+2)]=-U[POS2D(i,j+1,imax+2)];
 					V[POS2D(i,j-1,imax+2)]=-V[POS2D(i-1,j-1,imax+2)];
 					U[POS2D(i-1,j,imax+2)]=0;
 					V[POS2D(i,j,imax+2)]=0;
 					break;
-				case 19:		/*19 entspricht B_SW Sued-West-Kantenzelle*/
+				case 19:		//19 entspricht B_SW Sued-West-Kantenzelle
 					U[POS2D(i,j,imax+2)]=-U[POS2D(i,j-1,imax+2)];
 					V[POS2D(i,j,imax+2)]=-V[POS2D(i-1,j,imax+2)];
 					U[POS2D(i-1,j,imax+2)]=0;
