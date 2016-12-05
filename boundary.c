@@ -232,14 +232,27 @@ void initDrivenCavity(double *U, double *V, int imax, int jmax) {
 	}*/
 }
 
-void initKarman(double *U, double *V, int imax, int jmax) {
-	/*for (int j = 1; j <= jmax; j++) {
-		//U[POS2D(0,j,imax+2)]=1.0; V[POS2D(0,j,imax+2)]= -V[POS2D(1,j,imax+2)];	//Links einströmen
-		//U[POS2D(imax,j,imax+2)]=-1.0; V[POS2D(imax+1,j,imax+2)]= -V[POS2D(imax,j,imax+2)];	//Rechts einströmen	
-	}*/
+void initWest(double *U, double *V, int imax, int jmax) {
+	for (int j = 1; j <= jmax; j++) {
+		U[POS2D(0,j,imax+2)]=1.0; V[POS2D(0,j,imax+2)]= -V[POS2D(1,j,imax+2)];	//Links einströmen
+	}
+}
+
+void initEast(double *U, double *V, int imax, int jmax) {
+	for (int j = 1; j <= jmax; j++) {
+		U[POS2D(imax,j,imax+2)]=-1.0; V[POS2D(imax+1,j,imax+2)]= -V[POS2D(imax,j,imax+2)];	//Rechts einströmen	
+	}
+}
+
+void initNorth(double *U, double *V, int imax, int jmax) {
 	for (int i = 1; i <= imax; i++) {
-		//V[POS2D(i,0,imax+2)] = 1.0; U[POS2D(i,0,imax+2)] = -U[POS2D(i,1,imax+2)];	//Unten einströmen	
 		V[POS2D(i,jmax,imax+2)] = -1.0; U[POS2D(i,jmax+1,imax+2)] = -U[POS2D(i,jmax,imax+2)];	//Oben einströmen	
+	}
+}
+
+void initSouth(double *U, double *V, int imax, int jmax) {
+	for (int i = 1; i <= imax; i++) {
+		V[POS2D(i,0,imax+2)] = 1.0; U[POS2D(i,0,imax+2)] = -U[POS2D(i,1,imax+2)];	//Unten einströmen	
 	}
 }
 
@@ -247,7 +260,16 @@ void setSpecialBoundaryCond (double *U, double*V, int imax, int jmax, char *prob
 	if((strcmp(problem,"Driven cavity") == 0) || (strcmp(problem,"DC") == 0) || (strcmp(problem,"driven cavity") == 0)){
 		initDrivenCavity(U, V, imax, jmax);
 	}
-	else if((strcmp(problem,"Karman") == 0) || (strcmp(problem,"karman") == 0) || (strcmp(problem,"KW") == 0)){
-		initKarman(U, V, imax, jmax);
+	else if(strcmp(problem, "West") == 0 || (strcmp(problem, "west") == 0)){
+		initWest(U, V, imax, jmax);
+	}
+	else if(strcmp(problem, "Ost") == 0 || (strcmp(problem, "ost") == 0)){
+		initEast(U, V, imax, jmax);
+	}
+	else if(strcmp(problem, "Nord") == 0 || (strcmp(problem, "nord") == 0)){
+		initNorth(U, V, imax, jmax);
+	}
+	else if(strcmp(problem, "Süd") == 0 || (strcmp(problem, "süd") == 0)){
+		initSouth(U, V, imax, jmax);
 	}
 }
