@@ -76,6 +76,10 @@ void setBoundaryCond(double *U, double *V, char *FLAG, int imax, int jmax,int wl
 				V[POS2D(imax+1, j, imax+2)] = V[POS2D(imax, j, imax+2)];
 			}
 			break;
+		default: 
+			printf("Randbedingung nicht zulaessig.\n"); 
+			exit(EXIT_FAILURE);
+			break;
 	}
 
 	switch(wt){
@@ -96,7 +100,11 @@ void setBoundaryCond(double *U, double *V, char *FLAG, int imax, int jmax,int wl
 				V[POS2D(i, jmax, imax+2)] = V[POS2D(i, jmax-1, imax+2)];
 				U[POS2D(i, jmax+1, imax+2)] = U[POS2D(i, jmax, imax+2)];
 			}
-			break;			
+			break;		
+		default: 
+			printf("Randbedingung nicht zulaessig.\n"); 
+			exit(EXIT_FAILURE);
+			break;	
 	}
 
 	switch(wb){
@@ -117,6 +125,10 @@ void setBoundaryCond(double *U, double *V, char *FLAG, int imax, int jmax,int wl
 				V[POS2D(i, 0, imax+2)] = V[POS2D(i, 1, imax+2)];
 				U[POS2D(i, 0, imax+2)] = U[POS2D(i, 1, imax+2)];
 			}
+			break;
+		default: 
+			printf("Randbedingung nicht zulaessig.\n"); 
+			exit(EXIT_FAILURE);
 			break;
 	}
 
@@ -221,14 +233,16 @@ void initDrivenCavity(double *U, double *V, int imax, int jmax) {
 }
 
 void initKarman(double *U, double *V, int imax, int jmax) {
-	/*for (int j = 1; j <= jmax; j++) {
+	for (int j = 1; j <= jmax; j++) {
 		U[POS2D(0,j,imax+2)]=1.0;
-		V[POS2D(0,j,imax+2)]= -V[POS2D(1,j,imax+2)];				
-	}*/
-	for (int i = 1; i <= imax; i++) {
+		V[POS2D(0,j,imax+2)]= -V[POS2D(1,j,imax+2)];	
+		//U[POS2D(imax,j,imax+2)]=-1.0;
+		//V[POS2D(imax+1,j,imax+2)]= -V[POS2D(imax,j,imax+2)];				
+	}
+	/*for (int i = 1; i <= imax; i++) {
 		V[POS2D(i,0,imax+2)] = -0;
 		U[POS2D(i,0,imax+2)] = -U[POS2D(i,1,imax+2)];				
-	}
+	}*/
 }
 
 void setSpecialBoundaryCond (double *U, double*V, int imax, int jmax, char *problem){

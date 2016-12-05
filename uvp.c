@@ -32,14 +32,14 @@ void solvePoisson(double *p, double *rhs, char *FLAG, double omega, double epsil
 							oneOverDeltaXSquared * (p[ijlocation-1] + p[ijlocation+1]) + 
 							oneOverDeltaYSquared * (p[ijlocation-imaxPlus2] + p[ijlocation+imaxPlus2]) - 
 							rhs[ijlocation]);
-				}
+				}				
 			}
 		}
 		
 		for (i = 1; i <= imax; i++) {
 			for (j = 1; j <= jmax; j++) {
+				ijlocation = POS2D(i, j, imaxPlus2);
 				if (!FLAG[ijlocation]) {
-					ijlocation = POS2D(i, j, imaxPlus2);
 					twoPij = 2 * p[ijlocation];
 					sum = oneOverDeltaXSquared * (p[ijlocation+1] + p[ijlocation-1] - twoPij) +
 						oneOverDeltaYSquared * (p[ijlocation+imaxPlus2] + p[ijlocation-imaxPlus2] - twoPij) - 
@@ -167,15 +167,18 @@ void computeFG(double *U, double *V, double *F, double *G, char *FLAG, int imax,
 	}
 }
 
-void computeRHS(double *F, double *G, double *rhs, int imax, int jmax, double delt, double delx, double dely) {
+void computeRHS(double *F, double *G, double *rhs, char *FLAG, int imax, int jmax, double delt, double delx, double dely) {
 	double oneOverDelX = 1 / delx;	
 	double oneOverDelY = 1 / dely;
 	
 	for (int i = 1; i <= imax; i++) {
 		for (int j = 1; j <= jmax; j++) {
-			rhs[POS2D(i, j, imax+2)] = 1/delt * 
-				(oneOverDelX * (F[POS2D(i, j, imax+2)]-F[POS2D(i-1, j, imax+2)]) +
-				 oneOverDelY * (G[POS2D(i, j, imax+2)]-G[POS2D(i, j-1, imax+2)]));
+			int ijlocation = POS2D(i, j, imax+2);
+			if (!FLAG[ijlocation]) {
+				rhs[ijlocation] = 1/delt * 
+					(oneOverDelX * (F[ijlocation]-F[ijlocation-1]) +
+					oneOverDelY * (G[ijlocation]-G[ijlocation-imax-2]));
+			}
 		}
 	}
 }

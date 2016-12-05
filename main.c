@@ -59,6 +59,22 @@ void printSnapshot(int currentSnapshot, double *U, double *V, double *P, int ima
 	}
 }
 
+void printField(double *field, int imax, int jmax) {
+	for (int j = jmax+1; j >= 0; j--) {
+		for (int i = 0; i <= imax+1; i++)
+			printf("%f ", field[POS2D(i, j, imax+2)]);
+		printf("\n");
+	}
+}
+
+void printCharField(char *field, int imax, int jmax) {
+	for (int j = jmax+1; j >= 0; j--) {
+		for (int i = 0; i <= imax+1; i++)
+			printf("%d ", field[POS2D(i, j, imax+2)]);
+		printf("\n");
+	}
+}
+
 int calculateFluidDynamics(double xlength, double ylength, int imax, int jmax, double delx, double dely, 
 		double delt, double t_end, double del_vec, double tau, int itermax, double eps, double omg, 
 		double alpha, double Re, double GX, double GY, double UI, double VI, double PI, double *U, double *V, double *P, char *FLAG, int numFluidCells, int wl, int wr, int wt, int wb, char* problem) {
@@ -90,9 +106,8 @@ int calculateFluidDynamics(double xlength, double ylength, int imax, int jmax, d
 		computeDelt(&delt, imax, jmax, delx, dely, umax, vmax, Re, tau);
 		setBoundaryCond(U, V, FLAG, imax, jmax, wl, wr, wt, wb);
 		setSpecialBoundaryCond(U, V, imax, jmax, problem);
-		
 		computeFG(U, V, F, G, FLAG, imax, jmax, delt, delx, dely, GX, GY, alpha, Re);
-		computeRHS(F, G, rhs, imax, jmax, delt, delx, dely);
+		computeRHS(F, G, rhs, FLAG, imax, jmax, delt, delx, dely);
 		solvePoisson(P, rhs, FLAG, omg, eps, itermax, delx, dely, imax, jmax, numFluidCells);
 		adapUV(U, V, F, G, P, FLAG, imax, jmax, delt, delx, dely, &umax, &vmax); 
 		
@@ -117,7 +132,6 @@ int main(int argc, char** argv) {
 	char file[256];
 	char problem[256];
 	char obstacelsMap[256];
-	printf("test0\n");
 	if (argc==1) {
 		printf("Bitte eine Datei auswählen: ");
 		scanf("%s", file);
@@ -128,7 +142,6 @@ int main(int argc, char** argv) {
 			sprintf(problem, "%s", argv[2]);	
 	}
 	
-	printf("test1\n");
 	int imax, jmax, itermax, wl, wr, wt, wb, numFluidCells;
 	double xlength, ylength, delx, dely, delt, t_end, del_vec, tau, eps, omg, alpha, Re, GX, GY, UI, VI, PI;
 	readParameter(file, simulationName, obstacelsMap, &xlength, &ylength, &imax, &jmax, &delx, &dely, &delt, 
@@ -136,7 +149,6 @@ int main(int argc, char** argv) {
 	
 	createSimulationDirectory();
 	
-	printf("test2\n");
 	char *FLAG = (char *)malloc((imax+2) * (jmax+2) * sizeof(char));
 	initFlag(obstacelsMap, FLAG, imax, jmax, &numFluidCells);
 	xlength = imax / 5.0;
@@ -144,7 +156,6 @@ int main(int argc, char** argv) {
 	char obstacleFile[256];
 	sprintf(obstacleFile, "%s/obstacles.vtk", simulationName);
 	printObstacles(FLAG, imax, jmax, xlength, ylength, obstacleFile);
-	printf("%i\n", numFluidCells);
 	double *U, *V, *P;
 	if (allocateVector(&U, (imax+2) * (jmax+2))) {
 		free(FLAG);
@@ -162,6 +173,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	
+	//printCharField(FLAG, imax, jmax);
 	calculateFluidDynamics(xlength, ylength, imax, jmax, delx, dely, delt, 
 					t_end, del_vec, tau, itermax, eps, omg, alpha, Re, GX, GY, UI, VI, PI, U, V, P, FLAG, numFluidCells, wl, wr, wt, wb, problem);
 	
