@@ -102,6 +102,7 @@ int calculateFluidDynamics(double xlength, double ylength, int imax, int jmax, d
 	double vmax = (fabs(VI) > eps) ? VI : eps;
 	start = time(NULL);
 	
+	printSnapshot(currentSnapshot++, U, V, P, imax, jmax, xlength, ylength, t, t_end);
 	while (t < t_end) {
 		computeDelt(&delt, imax, jmax, delx, dely, umax, vmax, Re, tau);
 		setBoundaryCond(U, V, FLAG, imax, jmax, wl, wr, wt, wb);
@@ -151,8 +152,6 @@ int main(int argc, char** argv) {
 	
 	char *FLAG = (char *)malloc((imax+2) * (jmax+2) * sizeof(char));
 	initFlag(obstacelsMap, FLAG, imax, jmax, &numFluidCells);
-	xlength = imax / 5.0;
-	ylength = jmax / 5.0;
 	char obstacleFile[256];
 	sprintf(obstacleFile, "%s/obstacles.vtk", simulationName);
 	printObstacles(FLAG, imax, jmax, xlength, ylength, obstacleFile);

@@ -224,25 +224,23 @@ void obstacleBC(double *p, char *FLAG, int imax, int jmax, double deltaX, double
 void initDrivenCavity(double *U, double *V, int imax, int jmax) {
 	for (int i = 1; i <= imax; i++) {
 		U[POS2D(i, jmax+1, imax+2)] = (2.0 - U[POS2D(i, jmax, imax+2)]);
-		//U[POS2D(i, 0, imax+2)] = -(20.0 - U[POS2D(i, 1, imax+2)]);
+		//U[POS2D(i, 0, imax+2)] = -(2.0 - U[POS2D(i, 1, imax+2)]);
 	}
 	/*for (int j = 1; j <= jmax; j++) {
-		V[POS2D(0, j, imax+2)] = (20.0 - V[POS2D(1, j, imax+2)]);
-		V[POS2D(imax+1, j, imax+2)] = -(20.0 - V[POS2D(imax, j, imax+2)]);
+		V[POS2D(0, j, imax+2)] = (2.0 - V[POS2D(1, j, imax+2)]);
+		V[POS2D(imax+1, j, imax+2)] = -(2.0 - V[POS2D(imax, j, imax+2)]);
 	}*/
 }
 
 void initKarman(double *U, double *V, int imax, int jmax) {
-	for (int j = 1; j <= jmax; j++) {
-		U[POS2D(0,j,imax+2)]=1.0;
-		V[POS2D(0,j,imax+2)]= -V[POS2D(1,j,imax+2)];	
-		//U[POS2D(imax,j,imax+2)]=-1.0;
-		//V[POS2D(imax+1,j,imax+2)]= -V[POS2D(imax,j,imax+2)];				
-	}
-	/*for (int i = 1; i <= imax; i++) {
-		V[POS2D(i,0,imax+2)] = -0;
-		U[POS2D(i,0,imax+2)] = -U[POS2D(i,1,imax+2)];				
+	/*for (int j = 1; j <= jmax; j++) {
+		//U[POS2D(0,j,imax+2)]=1.0; V[POS2D(0,j,imax+2)]= -V[POS2D(1,j,imax+2)];	//Links einströmen
+		//U[POS2D(imax,j,imax+2)]=-1.0; V[POS2D(imax+1,j,imax+2)]= -V[POS2D(imax,j,imax+2)];	//Rechts einströmen	
 	}*/
+	for (int i = 1; i <= imax; i++) {
+		//V[POS2D(i,0,imax+2)] = 1.0; U[POS2D(i,0,imax+2)] = -U[POS2D(i,1,imax+2)];	//Unten einströmen	
+		V[POS2D(i,jmax,imax+2)] = -1.0; U[POS2D(i,jmax+1,imax+2)] = -U[POS2D(i,jmax,imax+2)];	//Oben einströmen	
+	}
 }
 
 void setSpecialBoundaryCond (double *U, double*V, int imax, int jmax, char *problem){

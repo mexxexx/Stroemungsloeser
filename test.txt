@@ -1,7 +1,7 @@
 name = Test
 heightMap = test.bmp
-xlength = 10.0
-ylength = 10.0
+xlength = 1.0
+ylength = 1.0
 imax = 5
 jmax = 5
 delt = 0.02
