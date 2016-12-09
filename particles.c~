@@ -17,8 +17,7 @@ void ParticleSeed(particle *particles, double posx1, double posy1, double posx2,
 
 		else{
 			particles[i].x=count*horizontal;
-			particles[i].y=count*vertical;
-			particles[i].isActive=1;	
+			particles[i].y=count*vertical;	
 			count++;	
 		}
 

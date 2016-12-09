@@ -5,7 +5,7 @@ typedef struct Partikel{
 
 	double x, y;
 	double u, v;
-	char isActive;
+
 
 
 }particle; 

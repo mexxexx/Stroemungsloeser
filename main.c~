@@ -158,8 +158,6 @@ int main(int argc, char** argv) {
 	int partcount=10000;
 	particle *particles;
 	particles= malloc(sizeof(particle)*partcount);
-	partInit(particles,partcount);
-	int anzahl=100;
 	int imax, jmax, itermax, wl, wr, wt, wb, numFluidCells;
 	double xlength, ylength, delx, dely, delt, t_end, del_vec, tau, eps, omg, alpha, Re, GX, GY, UI, VI, PI;
 	readParameter(file, simulationName, obstacelsMap, &xlength, &ylength, &imax, &jmax, &delx, &dely, &delt, 
