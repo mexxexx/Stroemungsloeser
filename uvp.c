@@ -198,7 +198,7 @@ void adapUV(double *U, double *V, double *F, double *G, double *P, char *FLAG, i
 				if (u > *umax)
 					*umax = u;
 			}
-			if (j < jmax) {
+			if (j < jmax && (!FLAG[POS2D(i, j, imax+2)] && !FLAG[POS2D(i, j+1, imax+2)])) {
 				v = G[POS2D(i, j, imax+2)] - delt * oneOverDelY * (P[POS2D(i, j+1, imax+2)] - P[POS2D(i, j, imax+2)]);
 				V[POS2D(i, j, imax+2)] = v; 
 				v = fabs(v);

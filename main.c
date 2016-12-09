@@ -16,6 +16,8 @@ int currentProgressStep = 1;
 time_t start;
 
 char simulationName[256];
+int imax, jmax, itermax, wl, wr, wt, wb, numFluidCells;
+double xlength, ylength, delx, dely, delt, t_end, del_vec, tau, eps, omg, alpha, Re, GX, GY, UI, VI, PI;
 
 void createSimulationDirectory() {
 	struct stat st = {0};
@@ -75,9 +77,7 @@ void printCharField(char *field, int imax, int jmax) {
 	}
 }
 
-int calculateFluidDynamics(double xlength, double ylength, int imax, int jmax, double delx, double dely, 
-		double delt, double t_end, double del_vec, double tau, int itermax, double eps, double omg, 
-		double alpha, double Re, double GX, double GY, double UI, double VI, double PI, double *U, double *V, double *P, char *FLAG, int numFluidCells, int wl, int wr, int wt, int wb, char* problem) {
+int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG, char* problem) {
 	initField(U, imax, jmax, UI);
 	if (strcmp("Stufe", problem) == 0) {
 		for (int i = 1; i <= imax; i++) 
@@ -153,8 +153,6 @@ int main(int argc, char** argv) {
 		}
 	}
 	
-	int imax, jmax, itermax, wl, wr, wt, wb, numFluidCells;
-	double xlength, ylength, delx, dely, delt, t_end, del_vec, tau, eps, omg, alpha, Re, GX, GY, UI, VI, PI;
 	readParameter(file, simulationName, obstacelsMap, &xlength, &ylength, &imax, &jmax, &delx, &dely, &delt, 
 							&del_vec, &t_end, &tau, &itermax, &eps, &omg, &alpha, &Re, &GX, &GY, &UI, &VI, &PI, &wl, &wr, &wt, &wb);
 	
@@ -182,9 +180,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	
-	//printCharField(FLAG, imax, jmax);
-	calculateFluidDynamics(xlength, ylength, imax, jmax, delx, dely, delt, 
-					t_end, del_vec, tau, itermax, eps, omg, alpha, Re, GX, GY, UI, VI, PI, U, V, P, FLAG, numFluidCells, wl, wr, wt, wb, problem);
+	calculateFluidDynamics(U, V, P, FLAG, problem);
 	
 	free(FLAG);
 	free(U);
