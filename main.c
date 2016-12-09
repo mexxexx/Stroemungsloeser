@@ -117,7 +117,7 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG, char* pr
 		computeRHS(F, G, rhs, FLAG, imax, jmax, delt, delx, dely);
 		solvePoisson(P, rhs, FLAG, omg, eps, itermax, delx, dely, imax, jmax, numFluidCells);
 		adapUV(U, V, F, G, P, FLAG, imax, jmax, delt, delx, dely, &umax, &vmax); 
-		
+		printSnapshot(currentSnapshot++, U, V, P, imax, jmax, xlength, ylength, t, t_end);
 		if (frameDuration >= del_vec) {
 			printSnapshot(currentSnapshot++, U, V, P, imax, jmax, xlength, ylength, t, t_end);
 			frameDuration -= del_vec;
