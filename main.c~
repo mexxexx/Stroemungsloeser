@@ -10,7 +10,6 @@
 #include "init.h"
 #include "uvp.h"
 #include "visual.h"
-#include "particles.h"
 
 #define PROGRESS_DISPLAY 0.05
 int currentProgressStep = 1;

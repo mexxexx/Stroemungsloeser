@@ -56,7 +56,7 @@ void particleTransport(Particle *particles, double delt, int partCount, double x
 
 
 
-void ParticleSeed(Particle *particles, double posx1, double posy1, double posx2, double posy2, int partcount, int anzahl){
+void ParticleSeed(particle *particles, double posx1, double posy1, double posx2, double posy2, int partcount, int anzahl){
 
 
 	int count=0;
@@ -77,20 +77,7 @@ void ParticleSeed(Particle *particles, double posx1, double posy1, double posx2,
 
 	}
 
-}
 
 
-void partInit(Particle *particles, int partcount){
-
-	for(int i=0;i<partcount;i++){
-		
-		particles[i].x=-10;
-		particles[i].y=-10;
-		particles[i].u=0;
-		particles[i].v=0;
-		particles[i].isActive=0;
-	}
-		
-	
 
 }
