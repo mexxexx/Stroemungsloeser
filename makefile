@@ -4,25 +4,27 @@ CFLAGS = -Wall
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< 
 
-OBJ = init.o boundary.o uvp.o visual.o main.o
+OBJ = init.o particles.o boundary.o uvp.o visual.o main.o
 
 simulation: $(OBJ)
 	$(CC) $(CFLAGS) -o simulation $(OBJ) -lm
 	
 init.o			:	init.h
-particles.o		:	particles.h
+particles.o		:	init.h particles.h
 boundary.o		:	init.h boundary.h
 uvp.o 			:	init.h boundary.h uvp.h 
-visual.o		:	init.h visual.h particles.h
+visual.o		:	init.h visual.h
 main.o			:	init.h boundary.h uvp.h visual.h
 
 debug: $(OBJ)
 	$(CC) $(CFLAGS) -o simulation -g $(OBJ) -lm
 	
 init.o			:	init.h
+particles.o		:	particles.h
 boundary.o		:	init.h boundary.h
 uvp.o 			:	init.h boundary.h uvp.h 
 visual.o		:	init.h visual.h
+visual.o		:	init.h visual.h particles.h
 main.o			:	init.h boundary.h uvp.h visual.h
 
 clean:

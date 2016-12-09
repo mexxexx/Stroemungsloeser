@@ -43,7 +43,8 @@ void parameterError(char *param) {
 
 void readParameter(char *filename, char *simulationName, char *heightMap, double *xlength, double *ylength, int *imax, int *jmax, 
 	double *delx, double *dely, double *delt, double *del_vec, double *t_end, double *tau, int *itermax,
-	double *eps, double *omg, double *alpha, double *Re, double *GX, double *GY, double *UI, double *VI, double *PI, int *wl, int *wr, int *wt, int *wb) {
+	double *eps, double *omg, double *alpha, double *Re, double *GX, double *GY, double *UI, double *VI, double *PI, 
+	int *wl, int *wr, int *wt, int *wb, double *posx1, double *posx2, double *posy1, double *posy2) {
 	FILE *f = fopen(filename, "r");
 	if (f == NULL) {
 		printf("Error opening parameter file\n");
@@ -102,6 +103,14 @@ void readParameter(char *filename, char *simulationName, char *heightMap, double
 		parameterError("wt");
 	if (fscanf(f, "%*s = %i\n", wb) != 1)
 		parameterError("wb");
+	if (fscanf(f, "%*s = %lf\n", posx1) != 1)
+		parameterError("posx1");
+	if (fscanf(f, "%*s = %lf\n", posy1) != 1)
+		parameterError("posy1");
+	if (fscanf(f, "%*s = %lf\n", posx2) != 1)
+		parameterError("posx2");
+	if (fscanf(f, "%*s = %lf\n", posy2) != 1)
+		parameterError("posy2");
 		
 	fclose(f);
 }

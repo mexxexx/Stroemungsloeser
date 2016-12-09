@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "visual.h"
 #include "init.h"
-#include "particles.h"
 
 void printScalarField(double *field, int imax, int jmax, double xlength, double ylength, char *filename) {
 	const double deltaX = xlength / imax;
@@ -103,25 +102,6 @@ void printObstacles(char *field, int imax, int jmax, double xlength, double ylen
 	for (int j = 1; j <= jmax; j++) 
 		for (int i = 1; i <= imax; i++) 
 			fprintf(f, "%d\n", (field[POS2D(i, j, imax+2)]) ? 1 : 0);
-	
-	fclose(f);
-}
-
-void printParticles(Particle *particles, int partCount, char *filename) {
-	FILE *f = fopen(filename, "w");
-	if (f == NULL)
-	{
-		printf("Error opening file!\n");
-		return;
-	}
-	
-	fprintf(f, "# vtk DataFile Version 3.0\n");
-	fprintf(f, "Particles\n");
-	fprintf(f, "ASCII\n");
-	fprintf(f, "DATASET POLYDATA\n");
-	fprintf(f, "POINTS %f double\n", partCount);
-	for (int i = 0; i < partCount; i++)
-		fprintf(f, "%f %f 0.0\n", particles[i].x, particles[i].y);
 	
 	fclose(f);
 }

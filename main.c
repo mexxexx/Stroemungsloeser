@@ -16,9 +16,9 @@
 int currentProgressStep = 1;
 time_t start;
 
-char simulationName[256];
-int imax, jmax, itermax, wl, wr, wt, wb, numFluidCells;
-double xlength, ylength, delx, dely, delt, t_end, del_vec, tau, eps, omg, alpha, Re, GX, GY, UI, VI, PI;
+char simulationName[256], problem[256];
+int imax, jmax, itermax, wl, wr, wt, wb, numFluidCells, partCount, anzahl;
+double xlength, ylength, delx, dely, delt, t_end, del_vec, tau, eps, omg, alpha, Re, GX, GY, UI, VI, PI, posx1, posx2, posy1, posy2;
 
 void createSimulationDirectory() {
 	struct stat st = {0};
@@ -80,7 +80,7 @@ void printCharField(char *field, int imax, int jmax) {
 	}
 }
 
-int calculateFluidDynamics(double* U, double* V, double* P, particle *particles, int partcount, char* FLAG, char* problem) {
+int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG, Particle *particles, int partCount) {
 	initField(U, imax, jmax, UI);
 	if (strcmp("Stufe", problem) == 0) {
 		for (int i = 1; i <= imax; i++) 
@@ -107,11 +107,11 @@ int calculateFluidDynamics(double* U, double* V, double* P, particle *particles,
 	int currentSnapshot = 1;
 	double t = 0;
 	double frameDuration = 0;
+	double seedTime = 0;
 	double umax = (fabs(UI) > eps) ? UI : eps;
 	double vmax = (fabs(VI) > eps) ? VI : eps;
 	start = time(NULL);
 	
-	printSnapshot(currentSnapshot++, U, V, P,particles,partcount, t);
 	while (t < t_end) {
 		computeDelt(&delt, imax, jmax, delx, dely, umax, vmax, Re, tau);
 		setBoundaryCond(U, V, FLAG, imax, jmax, wl, wr, wt, wb);
@@ -121,20 +121,23 @@ int calculateFluidDynamics(double* U, double* V, double* P, particle *particles,
 		solvePoisson(P, rhs, FLAG, omg, eps, itermax, delx, dely, imax, jmax, numFluidCells);
 		adapUV(U, V, F, G, P, FLAG, imax, jmax, delt, delx, dely, &umax, &vmax); 
 
-		ParticleSeed(particles, posx1, posx2, posy1, posy2, partcount, anzahl);
-		particleVelocity(U,V,particles,delx,dely,imax,jmax,partcount);
-		particleTransport(particles,delt,partcount,xlength,ylength);
+		if (seedTime >= del_vec/6) {
+			particleSeed(particles, posx1, posx2, posy1, posy2, partCount, anzahl);
+			seedTime -= del_vec/6;
+		}
+		particleVelocity(U, V, delx, dely, imax, jmax, particles, partCount);
+		particleTransport(particles, delt, partCount, xlength, ylength);
 
-		
 		if (frameDuration >= del_vec) {
-			printSnapshot(currentSnapshot++, U, V, P, t);
+			printSnapshot(currentSnapshot++, U, V, P, particles, partCount, t);
 			frameDuration -= del_vec;
 		}
 		t += delt;
 		frameDuration += delt;
+		seedTime += delt;
 	}
 	
-	printSnapshot(currentSnapshot, U, V, P, t_end);
+	printSnapshot(currentSnapshot, U, V, P, particles, partCount, t_end);
 	printf("%i frames taken in a time period of %.2f seconds (%.1f FPS)\n", currentSnapshot, t_end, currentSnapshot/t_end);
 	printf("Duration: %.1f seconds\n", (double)(time(NULL)-start)); 
 	free(F);
@@ -143,58 +146,82 @@ int calculateFluidDynamics(double* U, double* V, double* P, particle *particles,
 	return 0;
 }
 
-int main(int argc, char** argv) {
-	char file[256];
-	char problem[256];
-	char obstacelsMap[256];
+void readParams(int argc, char** argv, char* file) {
 	if (argc==1) {
 		printf("Bitte eine Datei auswählen: ");
 		scanf("%s", file);
 	}
-	else	{
+	else
 		sprintf(file, "%s", argv[1]);
-		if (argc == 3)
-			sprintf(problem, "%s", argv[2]);	
-		else {
-			printf("Bitte ein Problem angeben: ");
-			scanf("%s", problem);
-		}
+	
+	if (argc == 2){
+		printf("Bitte ein Problem angeben: ");
+		scanf("%s", problem);
+	}	
+	else 
+		sprintf(problem, "%s", argv[2]);
+		
+	if (argc == 3)
+		partCount = 10000;
+	else 
+		sscanf(argv[3], "%i", &partCount); 
+		
+	if (partCount < 200) 
+		partCount = 200;
+}
+
+int main(int argc, char** argv) {
+	char file[256];
+	readParams(argc, argv, file);
+	
+	Particle *particles = malloc(sizeof(Particle)*partCount);
+	if (particles == NULL) {
+		printf("Konnte keinen Speicherplatz fuer particles allokieren");
+		return 1;
 	}
-
-	int partcount=10000;
-	particle *particles;
-	particles= malloc(sizeof(particle)*partcount);
-	partInit(particles,partcount);
-	int anzahl=100;
-
+	
+	particleInit(particles, partCount);
+	char obstacelsMap[256];
 	readParameter(file, simulationName, obstacelsMap, &xlength, &ylength, &imax, &jmax, &delx, &dely, &delt, 
-							&del_vec, &t_end, &tau, &itermax, &eps, &omg, &alpha, &Re, &GX, &GY, &UI, &VI, &PI, &wl, &wr, &wt, &wb);
+							&del_vec, &t_end, &tau, &itermax, &eps, &omg, &alpha, &Re, &GX, &GY, &UI, &VI, &PI, &wl, &wr, &wt, &wb,
+							&posx1, &posx2, &posy1, &posy2);
 	
 	createSimulationDirectory();
+	anzahl = (int)(sqrt((posx1-posx2)*(posx1-posx2)+(posy1-posy2)*(posy1-posy2)))*30;
 	
-	char *FLAG = (char *)malloc((imax+2) * (jmax+2) * sizeof(char));
+	char *FLAG = (char*)malloc((imax+2) * (jmax+2) * sizeof(char));
+	if (FLAG == NULL) {
+		free(particles);
+		printf("Konnte keinen Speicherplatz fuer FLAG allokieren");
+		return 1;
+	}
 	initFlag(obstacelsMap, FLAG, imax, jmax, &numFluidCells);
+	
 	char obstacleFile[256];
 	sprintf(obstacleFile, "%s/obstacles.vtk", simulationName);
 	printObstacles(FLAG, imax, jmax, xlength, ylength, obstacleFile);
+	
 	double *U, *V, *P;
 	if (allocateVector(&U, (imax+2) * (jmax+2))) {
+		free(particles);
 		free(FLAG);
 		return 1;
 	}
 	if (allocateVector(&V, (imax+2) * (jmax+2))) {
+		free(particles);
 		free(FLAG);
 		free(U);
 		return 1;
 	}
 	if (allocateVector(&P, (imax+2) * (jmax+2))) {
+		free(particles);
 		free(FLAG);
 		free(U);
 		free(V);
 		return 1;
 	}
 	
-	calculateFluidDynamics(U, V, P, FLAG, problem);
+	calculateFluidDynamics(U, V, P, FLAG, particles, partCount);
 	
 	free(particles);
 	free(FLAG);

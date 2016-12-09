@@ -1,16 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
+#include "particles.h"
+#include "init.h"
 
 void particleVelocity(double *U, double *V, double delx, double dely, int imax, int jmax, Particle *particles, int partCount) {
 	double oneOverDelxDely = 1.0 / (delx * dely);
 	for (int k = 0; k < partCount; k++) {
+		if (!particles[k].isActive) continue;
+		
 		double x = particles[k].x;
 		double y = particles[k].y;
 		
 		int i = (int)(x/delx)+1;
-		int j = (int)(y+0.5*dely)/dely)+1;
+		int j = (int)((y+0.5*dely)/dely)+1;
 		
 		double x1 = (i-1)*delx;
 		double x2 = i*delx;
@@ -55,14 +58,11 @@ void particleTransport(Particle *particles, double delt, int partCount, double x
 }
 
 
-
-void ParticleSeed(Particle *particles, double posx1, double posy1, double posx2, double posy2, int partcount, int anzahl){
-
-
+void particleSeed(Particle *particles, double posx1, double posy1, double posx2, double posy2, int partCount, int anzahl){
 	int count=0;
 	double horizontal=(1./anzahl)*fabs(posx1-posx2);
 	double vertical=(1./anzahl)*fabs(posy1-posy2);
-	for (int i=0;i<partcount;i++) {
+	for (int i=0;i<partCount;i++) {
 		
 		if(count>anzahl) break;
 
@@ -74,23 +74,35 @@ void ParticleSeed(Particle *particles, double posx1, double posy1, double posx2,
 			particles[i].isActive=1;	
 			count++;	
 		}
-
 	}
-
 }
 
 
-void partInit(Particle *particles, int partcount){
-
-	for(int i=0;i<partcount;i++){
-		
+void particleInit(Particle *particles, int partCount){
+	for(int i=0;i<partCount;i++){	
 		particles[i].x=-10;
 		particles[i].y=-10;
 		particles[i].u=0;
 		particles[i].v=0;
 		particles[i].isActive=0;
 	}
-		
-	
+}
 
+void printParticles(Particle *particles, int partCount, char *filename) {
+	FILE *f = fopen(filename, "w");
+	if (f == NULL)
+	{
+		printf("Error opening file!\n");
+		return;
+	}
+	
+	fprintf(f, "# vtk DataFile Version 3.0\n");
+	fprintf(f, "Particles\n");
+	fprintf(f, "ASCII\n");
+	fprintf(f, "DATASET POLYDATA\n");
+	fprintf(f, "POINTS %i double\n", partCount);
+	for (int i = 0; i < partCount; i++)
+		fprintf(f, "%f %f 0.0\n", particles[i].x, particles[i].y);
+	
+	fclose(f);
 }

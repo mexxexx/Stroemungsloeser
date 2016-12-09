@@ -6,7 +6,8 @@
 
 void readParameter(char *filename, char *simulationName, char *heightMap, double *xlength, double *ylength, int *imax, int *jmax, 
 	double *delx, double *dely, double *delt, double *del_vec, double *t_end, double *tau, int *itermax,
-	double *eps, double *omg, double *alpha, double *Re, double *GX, double *GY, double *UI, double *VI, double *PI, int *wl, int *wr, int *wt, int *wb);
+	double *eps, double *omg, double *alpha, double *Re, double *GX, double *GY, double *UI, double *VI, double *PI,
+	int *wl, int *wr, int *wt, int *wb, double *posx1, double *posx2, double *posy1, double *posy2);
 	
 void initField(double *field, int imax, int jmax, double value);
 
