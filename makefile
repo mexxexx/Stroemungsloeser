@@ -10,9 +10,10 @@ simulation: $(OBJ)
 	$(CC) $(CFLAGS) -o simulation $(OBJ) -lm
 	
 init.o			:	init.h
+particles.o		:	particles.h
 boundary.o		:	init.h boundary.h
 uvp.o 			:	init.h boundary.h uvp.h 
-visual.o		:	init.h visual.h
+visual.o		:	init.h visual.h particles.h
 main.o			:	init.h boundary.h uvp.h visual.h
 
 debug: $(OBJ)

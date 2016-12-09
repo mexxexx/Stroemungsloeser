@@ -36,14 +36,16 @@ void createSimulationDirectory() {
 	}
 }
 
-void printSnapshot(int currentSnapshot, double *U, double *V, double *P, int imax, int jmax, 
-					double xlength, double ylength, double t, double t_end) {
+void printSnapshot(int currentSnapshot, double *U, double *V, double *P, Particle *particles, int partCount, double t) {
 	char nameOfVelocity[256];
 	char nameOfPressure[256];
+	char nameOfParticles[256];
 	sprintf(nameOfVelocity, "%s/%s_velocity_%05d.vtk", simulationName, simulationName, currentSnapshot);
+	sprintf(nameOfParticles, "%s/%s_particles_%05d.vtk", simulationName, simulationName, currentSnapshot);
 	sprintf(nameOfPressure, "%s/%s_pressure_%05d.vtk", simulationName, simulationName, currentSnapshot++);
 	printVectorField(U, V, imax, jmax, xlength, ylength, nameOfVelocity); 
 	printScalarField(P, imax, jmax, xlength, ylength, nameOfPressure);
+	printParticles(particles, partCount, nameOfParticles);
 	
 	double progress = t/t_end; 
 	if (progress >= PROGRESS_DISPLAY * currentProgressStep) {
@@ -108,7 +110,7 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG, char* pr
 	double vmax = (fabs(VI) > eps) ? VI : eps;
 	start = time(NULL);
 	
-	printSnapshot(currentSnapshot++, U, V, P, imax, jmax, xlength, ylength, t, t_end);
+	printSnapshot(currentSnapshot++, U, V, P, t);
 	while (t < t_end) {
 		computeDelt(&delt, imax, jmax, delx, dely, umax, vmax, Re, tau);
 		setBoundaryCond(U, V, FLAG, imax, jmax, wl, wr, wt, wb);
@@ -117,9 +119,9 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG, char* pr
 		computeRHS(F, G, rhs, FLAG, imax, jmax, delt, delx, dely);
 		solvePoisson(P, rhs, FLAG, omg, eps, itermax, delx, dely, imax, jmax, numFluidCells);
 		adapUV(U, V, F, G, P, FLAG, imax, jmax, delt, delx, dely, &umax, &vmax); 
-		printSnapshot(currentSnapshot++, U, V, P, imax, jmax, xlength, ylength, t, t_end);
+		
 		if (frameDuration >= del_vec) {
-			printSnapshot(currentSnapshot++, U, V, P, imax, jmax, xlength, ylength, t, t_end);
+			printSnapshot(currentSnapshot++, U, V, P, t);
 			frameDuration -= del_vec;
 		}
 		t += delt;
