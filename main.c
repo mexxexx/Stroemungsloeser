@@ -79,6 +79,12 @@ int calculateFluidDynamics(double xlength, double ylength, int imax, int jmax, d
 		double delt, double t_end, double del_vec, double tau, int itermax, double eps, double omg, 
 		double alpha, double Re, double GX, double GY, double UI, double VI, double PI, double *U, double *V, double *P, char *FLAG, int numFluidCells, int wl, int wr, int wt, int wb, char* problem) {
 	initField(U, imax, jmax, UI);
+	if (strcmp("Stufe", problem) == 0) {
+		for (int i = 1; i <= imax; i++) 
+			for (int j = 0; j <= jmax/2; j++) 
+				U[POS2D(i,j,imax+2)]=0;
+	}
+	
 	initField(V, imax, jmax, VI);
 	initField(P, imax, jmax, PI);
 	
@@ -141,6 +147,10 @@ int main(int argc, char** argv) {
 		sprintf(file, "%s", argv[1]);
 		if (argc == 3)
 			sprintf(problem, "%s", argv[2]);	
+		else {
+			printf("Bitte ein Problem angeben: ");
+			scanf("%s", problem);
+		}
 	}
 	
 	int imax, jmax, itermax, wl, wr, wt, wb, numFluidCells;
