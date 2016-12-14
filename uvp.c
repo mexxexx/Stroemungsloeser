@@ -55,7 +55,7 @@ void solvePoisson(double *p, double *rhs, char *FLAG, double omega, double epsil
 		
 		iter++;
 	}
-	
+	printf("It: %i, Res: %f\n", iter, error);
 	if (iter == itermax) 
 		printf("Abgebrochen nach %i iterationen mit einem Fehler von %f\n", iter, error);
 }

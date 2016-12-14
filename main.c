@@ -50,15 +50,7 @@ void printSnapshot(int currentSnapshot, double *U, double *V, double *P, Particl
 	
 	double progress = t/t_end; 
 	if (progress >= PROGRESS_DISPLAY * currentProgressStep) {
-		double elapsedSeconds = (double)(time(NULL)-start);
-		double secondsPerProgressDisplay = elapsedSeconds / currentProgressStep;
-		double secondsLeft = (1.0/PROGRESS_DISPLAY - currentProgressStep) * secondsPerProgressDisplay;
-		
-		printf("%.1f%% completed ", progress * 100);		
-		if (secondsLeft >= 120) 
-			printf("(%.0f minutes remaining)\n", secondsLeft / 60);
-		else 
-			printf("(%.0f seconds remaining)\n", secondsLeft);
+		printf("%.1f%% completed\n", progress * 100);		
 		
 		currentProgressStep++;		
 	}
