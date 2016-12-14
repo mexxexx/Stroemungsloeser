@@ -60,17 +60,17 @@ void particleTransport(Particle *particles, double delt, int partCount, double x
 
 void particleSeed(Particle *particles, double posx1, double posy1, double posx2, double posy2, int partCount, int anzahl){
 	int count=0;
-	double horizontal=(1./anzahl)*fabs(posx1-posx2);
+	double horizontal=(1./anzahl)*fabs(posx2-posx1);
+	//printf("%f %f %f %i\n", posx1, posx2, fabs(posx2-posx1), anzahl);
 	double vertical=(1./anzahl)*fabs(posy1-posy2);
 	for (int i=0;i<partCount;i++) {
-		
 		if(count>anzahl) break;
 
 		if(particles[i].isActive) continue;
 
 		else{
-			particles[i].x=count*horizontal;
-			particles[i].y=count*vertical;
+			particles[i].x=posx1+count*horizontal;
+			particles[i].y=posy1+count*vertical;
 			particles[i].isActive=1;	
 			count++;	
 		}

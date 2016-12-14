@@ -114,7 +114,7 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG, Particle
 		adapUV(U, V, F, G, P, FLAG, imax, jmax, delt, delx, dely, &umax, &vmax); 
 
 		if (seedTime >= del_vec/6) {
-			particleSeed(particles, posx1, posx2, posy1, posy2, partCount, anzahl);
+			particleSeed(particles, posx1, posy1, posx2, posy2, partCount, anzahl);
 			seedTime -= del_vec/6;
 		}
 		particleVelocity(U, V, delx, dely, imax, jmax, particles, partCount);
@@ -179,7 +179,8 @@ int main(int argc, char** argv) {
 							&posx1, &posx2, &posy1, &posy2);
 	
 	createSimulationDirectory();
-	anzahl = (int)(sqrt((posx1-posx2)*(posx1-posx2)+(posy1-posy2)*(posy1-posy2)))*30;
+	anzahl = (int)((sqrt((posx1-posx2)*(posx1-posx2)+(posy1-posy2)*(posy1-posy2)))*30)+1;
+	printf("%i\n", anzahl);
 	
 	char *FLAG = (char*)malloc((imax+2) * (jmax+2) * sizeof(char));
 	if (FLAG == NULL) {
