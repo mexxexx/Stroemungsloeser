@@ -51,7 +51,6 @@ void printSnapshot(int currentSnapshot, double *U, double *V, double *P, Particl
 	double progress = t/t_end; 
 	if (progress >= PROGRESS_DISPLAY * currentProgressStep) {
 		printf("%.1f%% completed\n", progress * 100);		
-		
 		currentProgressStep++;		
 	}
 }
@@ -113,12 +112,14 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG, Particle
 		solvePoisson(P, rhs, FLAG, omg, eps, itermax, delx, dely, imax, jmax, numFluidCells);
 		adapUV(U, V, F, G, P, FLAG, imax, jmax, delt, delx, dely, &umax, &vmax); 
 
-		if (seedTime >= del_vec/6) {
-			particleSeed(particles, posx1, posy1, posx2, posy2, partCount, anzahl);
-			seedTime -= del_vec/6;
+		if (partCount > 0) {
+			if (seedTime >= 0.025) {
+				particleSeed(particles, posx1, posy1, posx2, posy2, partCount, anzahl);
+				seedTime -= 0.025;
+			}
+			particleVelocity(U, V, delx, dely, imax, jmax, particles, partCount);
+			particleTransport(particles, delt, partCount, xlength, ylength);
 		}
-		particleVelocity(U, V, delx, dely, imax, jmax, particles, partCount);
-		particleTransport(particles, delt, partCount, xlength, ylength);
 
 		if (frameDuration >= del_vec) {
 			printSnapshot(currentSnapshot++, U, V, P, particles, partCount, t);
@@ -139,27 +140,27 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG, Particle
 }
 
 void readParams(int argc, char** argv, char* file) {
-	if (argc==1) {
+	if (argc<=1) {
 		printf("Bitte eine Datei auswählen: ");
 		scanf("%s", file);
 	}
 	else
 		sprintf(file, "%s", argv[1]);
 	
-	if (argc == 2){
+	if (argc <= 2){
 		printf("Bitte ein Problem angeben: ");
 		scanf("%s", problem);
 	}	
 	else 
 		sprintf(problem, "%s", argv[2]);
 		
-	if (argc == 3)
+	if (argc <= 3)
 		partCount = 10000;
 	else 
 		sscanf(argv[3], "%i", &partCount); 
 		
 	if (partCount < 200) 
-		partCount = 200;
+		partCount = 0;
 }
 
 int main(int argc, char** argv) {
@@ -180,7 +181,6 @@ int main(int argc, char** argv) {
 	
 	createSimulationDirectory();
 	anzahl = (int)((sqrt((posx1-posx2)*(posx1-posx2)+(posy1-posy2)*(posy1-posy2)))*30)+1;
-	printf("%i\n", anzahl);
 	
 	char *FLAG = (char*)malloc((imax+2) * (jmax+2) * sizeof(char));
 	if (FLAG == NULL) {

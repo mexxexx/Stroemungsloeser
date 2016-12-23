@@ -52,8 +52,11 @@ void particleTransport(Particle *particles, double delt, int partCount, double x
 		p->x += delt * p->u;
 		p->y += delt * p->v;
 		
-		if (p->x < 0 || p->x >= xlength || p->y < 0 || p->y >= ylength)
+		if (p->x < 0 || p->x >= xlength || p->y < 0 || p->y >= ylength) {
 			p->isActive = 0;
+			p->x = -10;
+			p->y = -10;
+		}
 	}
 }
 
@@ -61,7 +64,6 @@ void particleTransport(Particle *particles, double delt, int partCount, double x
 void particleSeed(Particle *particles, double posx1, double posy1, double posx2, double posy2, int partCount, int anzahl){
 	int count=0;
 	double horizontal=(1./anzahl)*fabs(posx2-posx1);
-	//printf("%f %f %f %i\n", posx1, posx2, fabs(posx2-posx1), anzahl);
 	double vertical=(1./anzahl)*fabs(posy1-posy2);
 	for (int i=0;i<partCount;i++) {
 		if(count>anzahl) break;

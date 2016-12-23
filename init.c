@@ -202,19 +202,28 @@ void initFlag(char *heightMap, char *FLAG, int imax, int jmax, int *numFluidCell
 	free(data);
 	
 	for (int i = 0; i <= imax+1; i++) {
-		FLAG[POS2D(i, 0, imax+2)]=25;
-		FLAG[POS2D(i, jmax+1, imax+2)]=25;
+		FLAG[POS2D(i, 0, imax+2)]=0;
+		FLAG[POS2D(i, jmax+1, imax+2)]=0;
 	}
 	
 	for (int j = 0; j <= jmax+1; j++) {
-		FLAG[POS2D(0, j, imax+2)]=7;
-		FLAG[POS2D(imax+1, j, imax+2)]=7;
+		FLAG[POS2D(0, j, imax+2)]=0;
+		FLAG[POS2D(imax+1, j, imax+2)]=0;
 	}
 	
 	for (int i = 1; i <= imax; i++) {  
 		for (int j = 1; j <= jmax; j++) {
 			int posij = POS2D(i, j, imax+2);
-			if (FLAG[posij]) {			
+			if (FLAG[posij]) {		
+				if (i==1)
+					FLAG[posij-1] = 9;
+				else if (i==imax)
+					FLAG[posij+1] = 17;
+				if (j==1)
+					FLAG[posij-imax-2] = 5;
+				else if (j==jmax)
+					FLAG[posij+imax+2] = 3;
+					
 				if (FLAG[posij+1]) //OSTEN
 					FLAG[posij] |= 17;
 				if (FLAG[posij-1]) //WESTEN
@@ -225,5 +234,38 @@ void initFlag(char *heightMap, char *FLAG, int imax, int jmax, int *numFluidCell
 					FLAG[posij] |= 5;
 			}
 		}
+	}
+	
+	for (int i = 1; i <= imax; i++) {
+		if (FLAG[POS2D(i+1, 0, imax+2)]) //OSTEN
+			FLAG[POS2D(i, 0, imax+2)] |= 17;
+		if (FLAG[POS2D(i-1, 0, imax+2)]) //WESTEN
+			FLAG[POS2D(i, 0, imax+2)] |= 9;
+		if (FLAG[POS2D(i, 1, imax+2)]) //NORDEN
+			FLAG[POS2D(i, 0, imax+2)] |= 3;
+			
+		if (FLAG[POS2D(i+1, jmax+1, imax+2)]) //OSTEN
+			FLAG[POS2D(i, jmax+1, imax+2)] |= 17;
+		if (FLAG[POS2D(i-1, jmax+1, imax+2)]) //WESTEN
+			FLAG[POS2D(i, jmax+1, imax+2)] |= 9;
+		if (FLAG[POS2D(i, jmax, imax+2)]) //SÜDEN
+			FLAG[POS2D(i, jmax+1, imax+2)] |= 5;
+		
+	}
+	
+	for (int j = 1; j <= jmax; j++) {
+		if (FLAG[POS2D(1, j, imax+2)]) //OSTEN
+			FLAG[POS2D(0, j, imax+2)] |= 17;
+		if (FLAG[POS2D(0, j-1, imax+2)]) //SÜDEN
+			FLAG[POS2D(0, j, imax+2)] |= 5;
+		if (FLAG[POS2D(0, j+1, imax+2)]) //NORDEN
+			FLAG[POS2D(0, j, imax+2)] |= 3;
+			
+		if (FLAG[POS2D(imax, j, imax+2)]) //WESTEN
+			FLAG[POS2D(imax+1, j, imax+2)] |= 9;
+		if (FLAG[POS2D(imax+1, j-1, imax+2)]) //SÜDEN
+			FLAG[POS2D(imax+1, j, imax+2)] |= 5;
+		if (FLAG[POS2D(imax+1, j+1, imax+2)]) //NORDEN
+			FLAG[POS2D(imax+1, j, imax+2)] |= 3;
 	}
 }
