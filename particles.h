@@ -12,5 +12,6 @@ void particleVelocity(double *U, double *V, double delx, double dely, int imax, 
 void particleTransport(Particle *particles, double delt, int partCount, double xlength, double ylength);
 void particleInit(Particle *particles, int partCount);
 void printParticles(Particle *particles, int partCount, char *filename);
+void bmp_verify(char* FLAG, int imax, int jmax);
 
 #endif

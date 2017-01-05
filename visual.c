@@ -105,3 +105,29 @@ void printObstacles(char *field, int imax, int jmax, double xlength, double ylen
 	
 	fclose(f);
 }
+
+
+void COMP_PSI_ZETA(double *U, double *V, int imax, int jmax, double xlength, double ylength, double *PSI, double *ZETA, char *FLAG){
+
+	const double deltaX = xlength / imax;
+	const double deltaY = ylength / jmax;
+
+
+	for(int i=0;i<=imax;i++) PSI[POS2D(i, 0, imax+2)]=0;
+
+	for(int i=0;i<=imax;i++){
+		for(int j=1;j<=jmax;j++){
+			if(!FLAG[POS2D(i, j, imax+2)]) PSI[POS2D(i, j, imax+2)]=PSI[POS2D(i, j-1, imax+2)]+U[POS2D(i, j, imax+2)]*deltaY;
+			else if(FLAG[POS2D(i, j, imax+2)]) PSI[POS2D(i, j, imax+2)]=PSI[POS2D(i, j-1, imax+2)];
+		}	
+	}	
+
+	for(int i=0;i<=imax;i++){
+		for(int j=1;j<=jmax;j++){
+			if(!FLAG[POS2D(i, j, imax+2)]) ZETA[POS2D(i, j, imax+2)]=(U[POS2D(i, j+1, imax+2)]-U[POS2D(i, j, imax+2)])*(1./deltaY)-(V[POS2D(i+1, j, imax+2)]-V[POS2D(i, j, imax+2)])*(1./deltaX);
+			else if(FLAG[POS2D(i, j, imax+2)]) ZETA[POS2D(i, j, imax+2)]=0;
+		}	
+	}	
+
+
+}

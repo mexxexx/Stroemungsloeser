@@ -37,16 +37,22 @@ void createSimulationDirectory() {
 	}
 }
 
-void printSnapshot(int currentSnapshot, double *U, double *V, double *P, Particle *particles, int partCount, double t) {
+void printSnapshot(int currentSnapshot, double *U, double *V, double *P,double *PSI, double *ZETA, Particle *particles, int partCount, double t) {
 	char nameOfVelocity[256];
 	char nameOfPressure[256];
 	char nameOfParticles[256];
+	char nameOfPSI[256];
+	char nameOfZETA[256];
 	sprintf(nameOfVelocity, "%s/%s_velocity_%05d.vtk", simulationName, simulationName, currentSnapshot);
 	sprintf(nameOfParticles, "%s/%s_particles_%05d.vtk", simulationName, simulationName, currentSnapshot);
 	sprintf(nameOfPressure, "%s/%s_pressure_%05d.vtk", simulationName, simulationName, currentSnapshot++);
+	sprintf(nameOfPSI, "%s/%s_PSI_%05d.vtk", simulationName, simulationName, currentSnapshot);
+	sprintf(nameOfZETA, "%s/%s_ZETA_%05d.vtk", simulationName, simulationName, currentSnapshot);	
 	printVectorField(U, V, imax, jmax, xlength, ylength, nameOfVelocity); 
 	printScalarField(P, imax, jmax, xlength, ylength, nameOfPressure);
 	printParticles(particles, partCount, nameOfParticles);
+	printScalarField(PSI, imax, jmax, xlength, ylength, nameOfPSI);
+	printScalarField(ZETA, imax, jmax, xlength, ylength, nameOfZETA);
 	
 	double progress = t/t_end; 
 	if (progress >= PROGRESS_DISPLAY * currentProgressStep) {
@@ -71,7 +77,7 @@ void printCharField(char *field, int imax, int jmax) {
 	}
 }
 
-int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG, Particle *particles, int partCount) {
+int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG,double *PSI, double *ZETA, Particle *particles, int partCount) {
 	initField(U, imax, jmax, UI);
 	if (strcmp("Stufe", problem) == 0) {
 		for (int i = 1; i <= imax; i++) 
@@ -111,9 +117,10 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG, Particle
 		computeRHS(F, G, rhs, FLAG, imax, jmax, delt, delx, dely);
 		solvePoisson(P, rhs, FLAG, omg, eps, itermax, delx, dely, imax, jmax, numFluidCells);
 		adapUV(U, V, F, G, P, FLAG, imax, jmax, delt, delx, dely, &umax, &vmax); 
+		COMP_PSI_ZETA(U, V, imax, jmax, xlength, ylength, PSI, ZETA, FLAG);
 
 		if (partCount > 0) {
-			if (seedTime >= 0.025) {
+			if (seedTime >= 0.1) {/*Before: 0.025*/
 				particleSeed(particles, posx1, posy1, posx2, posy2, partCount, anzahl);
 				seedTime -= 0.025;
 			}
@@ -122,7 +129,7 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG, Particle
 		}
 
 		if (frameDuration >= del_vec) {
-			printSnapshot(currentSnapshot++, U, V, P, particles, partCount, t);
+			printSnapshot(currentSnapshot++, U, V, P, PSI, ZETA, particles, partCount, t);
 			frameDuration -= del_vec;
 		}
 		t += delt;
@@ -130,7 +137,7 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG, Particle
 		seedTime += delt;
 	}
 	
-	printSnapshot(currentSnapshot, U, V, P, particles, partCount, t_end);
+	printSnapshot(currentSnapshot, U, V, P, PSI, ZETA, particles, partCount, t_end);
 	printf("%i frames taken in a time period of %.2f seconds (%.1f FPS)\n", currentSnapshot, t_end, currentSnapshot/t_end);
 	printf("Duration: %.1f seconds\n", (double)(time(NULL)-start)); 
 	free(F);
@@ -189,12 +196,13 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	initFlag(obstacelsMap, FLAG, imax, jmax, &numFluidCells);
-	
+	bmp_verify(FLAG,imax, jmax);
+
 	char obstacleFile[256];
 	sprintf(obstacleFile, "%s/obstacles.vtk", simulationName);
 	printObstacles(FLAG, imax, jmax, xlength, ylength, obstacleFile);
 	
-	double *U, *V, *P;
+	double *U, *V, *P,*PSI,*ZETA;
 	if (allocateVector(&U, (imax+2) * (jmax+2))) {
 		free(particles);
 		free(FLAG);
@@ -213,13 +221,32 @@ int main(int argc, char** argv) {
 		free(V);
 		return 1;
 	}
+	if (allocateVector(&PSI, (imax+2) * (jmax+2))) {
+		free(particles);
+		free(FLAG);
+		free(U);
+		free(V);
+		free(P);
+		return 1;
+	}	
+	if (allocateVector(&ZETA, (imax+2) * (jmax+2))) {
+		free(particles);
+		free(FLAG);
+		free(U);
+		free(V);
+		free(P);
+		free(PSI);
+		return 1;
+	}
 	
-	calculateFluidDynamics(U, V, P, FLAG, particles, partCount);
+	calculateFluidDynamics(U, V, P, FLAG, PSI, ZETA, particles, partCount);
 	
 	free(particles);
 	free(FLAG);
 	free(U);
 	free(V);
 	free(P);
+	free(PSI);
+	free(ZETA);
 	return 0;
 }

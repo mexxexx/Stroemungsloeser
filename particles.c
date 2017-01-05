@@ -105,6 +105,29 @@ void printParticles(Particle *particles, int partCount, char *filename) {
 	fprintf(f, "POINTS %i double\n", partCount);
 	for (int i = 0; i < partCount; i++)
 		fprintf(f, "%f %f 0.0\n", particles[i].x, particles[i].y);
+	fprintf(f, "-10.0 -10.0 0.0\n");
 	
 	fclose(f);
+}
+
+
+void bmp_verify(char* FLAG, int imax, int jmax){
+	int sides=0;
+
+	for (int i = 1; i <= imax; i++) {  
+		for (int j = 1; j <= jmax; j++) {
+			//int posij = POS2D(i, j, imax+2);
+			sides=0;
+			if (FLAG[POS2D(i, j, imax+2)]!=0) {
+				if (FLAG[POS2D(i+1, j, imax+2)]!=0) sides++;
+				if (FLAG[POS2D(i-1, j, imax+2)]!=0) sides++;
+				if (FLAG[POS2D(i, j+1, imax+2)]!=0) sides++;
+				if (FLAG[POS2D(i, j-1, imax+2)]!=0) sides++;
+			}
+			if(sides>4){
+				printf("Oops. There appears to be a forbidden cell in your obstacle. It's at position i=%d, j=%d\n",i,j);
+				exit(-1);
+			}
+		}
+	}
 }
