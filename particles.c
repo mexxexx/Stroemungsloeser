@@ -102,7 +102,7 @@ void printParticles(Particle *particles, int partCount, char *filename) {
 	fprintf(f, "Particles\n");
 	fprintf(f, "ASCII\n");
 	fprintf(f, "DATASET POLYDATA\n");
-	fprintf(f, "POINTS %i double\n", partCount);
+	fprintf(f, "POINTS %i double\n", partCount+1);
 	for (int i = 0; i < partCount; i++)
 		fprintf(f, "%f %f 0.0\n", particles[i].x, particles[i].y);
 	fprintf(f, "-10.0 -10.0 0.0\n");
