@@ -120,9 +120,9 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG,double *P
 		COMP_PSI_ZETA(U, V, imax, jmax, xlength, ylength, PSI, ZETA, FLAG);
 
 		if (partCount > 0) {
-			if (seedTime >= 0.1) {/*Before: 0.025*/
+			if (seedTime >= 0.05) {/*Before: 0.025*/
 				particleSeed(particles, posx1, posy1, posx2, posy2, partCount, anzahl);
-				seedTime -= 0.025;
+				seedTime -= 0.05;
 			}
 			particleVelocity(U, V, delx, dely, imax, jmax, particles, partCount);
 			particleTransport(particles, delt, partCount, xlength, ylength);
@@ -146,25 +146,38 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG,double *P
 	return 0;
 }
 
-void readParams(int argc, char** argv, char* file) {
-	if (argc<=1) {
+void readParams(int argc, char** argv, char* file) {int fileLoaded = 0;
+	int problemSelected = 0;
+	partCount = 10000;
+	for (int i = 1; i < argc; i++) {
+		switch (argv[i][0]) {
+			case 'f':
+				argv[i]+=2;
+				sprintf(file, "%s", argv[i]);
+				fileLoaded = 1;
+				break;
+			case 'p':
+				argv[i]+=2;
+				sprintf(problem, "%s", argv[i]);
+				problemSelected = 1;
+				break;
+			case 'n':
+				argv[i]+=2;
+				sscanf(argv[i], "%i", &partCount); 
+			default:
+				break;
+		}
+	}
+	
+	if (!fileLoaded) {
 		printf("Bitte eine Datei auswählen: ");
 		scanf("%s", file);
 	}
-	else
-		sprintf(file, "%s", argv[1]);
 	
-	if (argc <= 2){
+	if (!problemSelected){
 		printf("Bitte ein Problem angeben: ");
 		scanf("%s", problem);
 	}	
-	else 
-		sprintf(problem, "%s", argv[2]);
-		
-	if (argc <= 3)
-		partCount = 10000;
-	else 
-		sscanf(argv[3], "%i", &partCount); 
 		
 	if (partCount < 200) 
 		partCount = 0;

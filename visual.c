@@ -128,6 +128,4 @@ void COMP_PSI_ZETA(double *U, double *V, int imax, int jmax, double xlength, dou
 			else if(FLAG[POS2D(i, j, imax+2)]) ZETA[POS2D(i, j, imax+2)]=0;
 		}	
 	}	
-
-
 }

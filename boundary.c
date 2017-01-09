@@ -239,6 +239,8 @@ void initWest(double *U, double *V, int imax, int jmax) {
 	}
 }
 
+
+
 void initEast(double *U, double *V, int imax, int jmax) {
 	for (int j = 1; j <= jmax; j++) {
 		U[POS2D(imax,j,imax+2)]=-1.0; 
