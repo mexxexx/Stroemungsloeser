@@ -1,5 +1,5 @@
-name = Wing
-heightMap = wing.bmp
+name = Wing3
+heightMap = wing3.bmp
 xlength = 15
 ylength = 3.5
 imax = 300

@@ -64,10 +64,18 @@ void particleTransport(Particle *particles, double delt, int partCount, double x
 void particleSeed(Particle *particles, double posx1, double posy1, double posx2, double posy2, int partCount, int anzahl){
 	int count=0;
 	int freePart=0;
-	double horizontal=(1./anzahl)*fabs(posx2-posx1);
-	double vertical=(1./anzahl)*fabs(posy1-posy2);
-	for (int i=0;i<partCount;i++) if(particles[i].isActive) freePart++;
-	if(freePart<anzahl){
+	for (int i=0;i<partCount;i++) { 
+		if(!particles[i].isActive) 
+			freePart++;
+		if (freePart == anzahl)
+			break;
+	}
+	if (freePart == 0)
+		return;
+	
+	double horizontal = 0;
+	double vertical = 0;
+	if(freePart < anzahl){
 		horizontal=(1./freePart)*fabs(posx2-posx1);
 		vertical=(1./freePart)*fabs(posy1-posy2);
 	}

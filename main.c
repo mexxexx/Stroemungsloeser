@@ -13,6 +13,8 @@
 #include "particles.h"
 
 #define PROGRESS_DISPLAY 0.05
+#define PARTICLE_DELTA 0.05
+
 int currentProgressStep = 1;
 time_t start;
 
@@ -120,9 +122,9 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG,double *P
 		COMP_PSI_ZETA(U, V, imax, jmax, xlength, ylength, PSI, ZETA, FLAG);
 
 		if (partCount > 0) {
-			if (seedTime >= 0.05) {/*Before: 0.025*/
+			if (seedTime >= PARTICLE_DELTA) {/*Before: 0.025*/
 				particleSeed(particles, posx1, posy1, posx2, posy2, partCount, anzahl);
-				seedTime -= 0.05;
+				seedTime -= PARTICLE_DELTA;
 			}
 			particleVelocity(U, V, delx, dely, imax, jmax, particles, partCount);
 			particleTransport(particles, delt, partCount, xlength, ylength);
