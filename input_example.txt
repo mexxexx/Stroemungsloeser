@@ -1,0 +1,40 @@
+name = Simulations_Name
+heightMap = Simulations_Hindernisse.bmp
+xlength = Breite
+ylength = Hoehe
+imax = Aufloesung_x_Richtung
+jmax = Aufloesung_y_Richtung
+delt = Standard_Zeitschrittweite
+t_end = Simulations_Dauer
+del_vec = Aufnahme_Zeitschrittweite
+tau = Stabilitaetsparameter
+itermax = Maximale_Iterationen
+eps = Genauigkeit
+omg = Konvergenz_Parameter
+alpha = Stabilitaetsparameter
+Re = Raynolds_Zahl
+Pr = Prantl_Zahl
+beta = Volumenexpansionskoeffizient
+GX = Gravitation_x_Richtung
+GY = Gravitation_y_Richtung
+UI = Initialisierung_Geschwindigkeit_x
+VI = Initialisierung_Geschwindigkeit_y
+PI = Initialisierung_Druck
+TI = Initialisierung_Temperatur
+wl = Wand_Hindernis Wand_Temperatur Temperatur_Wert
+wr = Wand_Hindernis Wand_Temperatur Temperatur_Wert
+wt = Wand_Hindernis Wand_Temperatur Temperatur_Wert
+wb = Wand_Hindernis Wand_Temperatur Temperatur_Wert
+posx1 = Position_Partikel_x
+posy1 = Position_Partikel_y
+posx2 = Position_Partikel_x
+posy2 = Position_Partikel_y
+
+% Wand_Hindernis:
+% 1 = No-Slip
+% 2 = Slip
+% 3 = Ausfluss
+
+% Wand_Temperatur:
+% 1 = Dirichlet
+% 2 = Neumann

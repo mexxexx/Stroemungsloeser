@@ -4,7 +4,6 @@
 #include "init.h"
 #include "boundary.h"
 
-/* p ist Gitter mit (imax x jmax) inneren Zellen */
 void applyHomogenousNeumannBC(double *p, int imax, int jmax) {
 	const int imaxPlus2 = imax+2;
 	const int imaxPlus1 = imax+1;
@@ -30,7 +29,10 @@ void applyHomogenousNeumannBC(double *p, int imax, int jmax) {
 	}
 }
 
-void setBoundaryCond(double *U, double *V, char *FLAG, int imax, int jmax,int wl, int wr, int wt, int wb) {
+void setBoundaryCond(double *U, double *V, double *TEMP, char *FLAG, double delx, double dely, int imax, int jmax,int wl, int wr, int wt, int wb,
+					int tl, double tl_value, int tr, double tr_value, int tt, double tt_value, int tb, double tb_value) {
+	double oneOverdelxSquaredPlusdelySquared=(1/(delx*delx+dely*dely));
+	
 	switch(wl){
 		case 1:
 			for (int j = 1; j <= jmax; j++) {
@@ -55,7 +57,21 @@ void setBoundaryCond(double *U, double *V, char *FLAG, int imax, int jmax,int wl
 			exit(EXIT_FAILURE);
 			break;
 	}
-
+	
+	switch(tl){
+		case 1:
+			for (int j = 1; j <= jmax; j++)
+				TEMP[POS2D(0, j, imax+2)] = 2*tl_value*((j-0.5)*dely) - TEMP[POS2D(1, j, imax+2)];
+			break;
+		case 2:
+			for (int j = 1; j <= jmax; j++) 
+				TEMP[POS2D(0, j, imax+2)] = TEMP[POS2D(1, j, imax+2)] + delx*tl_value*((j-0.5)*dely);
+			break;
+		default: 
+			printf("Randbedingung nicht zulaessig.\n"); 
+			exit(EXIT_FAILURE);
+			break;
+	}
 
 	switch(wr){
 		case 1:
@@ -75,6 +91,21 @@ void setBoundaryCond(double *U, double *V, char *FLAG, int imax, int jmax,int wl
 				U[POS2D(imax, j, imax+2)] = U[POS2D(imax-1, j, imax+2)];
 				V[POS2D(imax+1, j, imax+2)] = V[POS2D(imax, j, imax+2)];
 			}
+			break;
+		default: 
+			printf("Randbedingung nicht zulaessig.\n"); 
+			exit(EXIT_FAILURE);
+			break;
+	}
+
+	switch(tr){
+		case 1:
+			for (int j = 1; j <= jmax; j++)
+				TEMP[POS2D(imax+1, j, imax+2)] = 2*tl_value*((j-0.5)*dely) - TEMP[POS2D(imax, j, imax+2)];
+			break;
+		case 2:
+			for (int j = 1; j <= jmax; j++) 
+				TEMP[POS2D(imax+1, j, imax+2)] = TEMP[POS2D(imax, j, imax+2)] + delx*tl_value*((j-0.5)*dely);
 			break;
 		default: 
 			printf("Randbedingung nicht zulaessig.\n"); 
@@ -107,6 +138,21 @@ void setBoundaryCond(double *U, double *V, char *FLAG, int imax, int jmax,int wl
 			break;	
 	}
 
+	switch(tt){
+		case 1:
+			for (int i = 1; i <= imax; i++)
+				TEMP[POS2D(i, 0, imax+2)] = 2*tl_value*((i-0.5)*delx) - TEMP[POS2D(i, 1, imax+2)];
+			break;
+		case 2:
+			for (int i = 1; i <= imax; i++)
+				TEMP[POS2D(i, 0, imax+2)] = TEMP[POS2D(i, 1, imax+2)] + dely*tl_value*((i-0.5)*delx);
+			break;
+		default: 
+			printf("Randbedingung nicht zulaessig.\n"); 
+			exit(EXIT_FAILURE);
+			break;
+	}
+	
 	switch(wb){
 		case 1:
 			for (int i = 1; i <= imax; i++) {
@@ -132,6 +178,21 @@ void setBoundaryCond(double *U, double *V, char *FLAG, int imax, int jmax,int wl
 			break;
 	}
 
+	switch(tb){
+		case 1:
+			for (int i = 1; i <= imax; i++)
+				TEMP[POS2D(i, jmax+1, imax+2)] = 2*tl_value*((i-0.5)*delx) - TEMP[POS2D(i, jmax, imax+2)];
+			break;
+		case 2:
+			for (int i = 1; i <= imax; i++)
+				TEMP[POS2D(i, jmax+1, imax+2)] = TEMP[POS2D(i, jmax, imax+2)] + dely*tl_value*((i-0.5)*delx);
+			break;
+		default: 
+			printf("Randbedingung nicht zulaessig.\n"); 
+			exit(EXIT_FAILURE);
+			break;
+	}
+	
 	for (int i = 1; i <= imax; i++) {
 		for (int j = 1; j <= jmax; j++) {
 			switch(FLAG[POS2D(i,j,imax+2)]){
@@ -139,45 +200,53 @@ void setBoundaryCond(double *U, double *V, char *FLAG, int imax, int jmax,int wl
 					U[POS2D(i,j,imax+2)]=-U[POS2D(i,j+1,imax+2)];
 					U[POS2D(i-1,j,imax+2)]=-U[POS2D(i-1,j+1,imax+2)];
 					V[POS2D(i,j,imax+2)]=0;
+					TEMP[POS2D(i,j,imax+2)] = TEMP[POS2D(i,j+1,imax+2)];
 					break;
 				case 27:		//27 entspricht B_S Sued-Kantenzelle
 					U[POS2D(i,j,imax+2)]=-U[POS2D(i,j-1,imax+2)];
 					U[POS2D(i-1,j,imax+2)]=-U[POS2D(i-1,j-1,imax+2)];
 					V[POS2D(i,j-1,imax+2)]=0;
+					TEMP[POS2D(i,j,imax+2)] = TEMP[POS2D(i,j-1,imax+2)];
 					break;	
 				case 23:		//23 entspricht B_W West-Kantenzelle
 					V[POS2D(i,j,imax+2)]=-V[POS2D(i-1,j,imax+2)];
 					V[POS2D(i,j-1,imax+2)]=-V[POS2D(i-1,j-1,imax+2)];
 					U[POS2D(i-1,j,imax+2)]=0;
+					TEMP[POS2D(i,j,imax+2)] = TEMP[POS2D(i-1,j,imax+2)];
 					break;		
 				case 15:		//15 entspricht B_O Ost-Kantenzelle
 					V[POS2D(i,j,imax+2)]=-V[POS2D(i+1,j,imax+2)];
 					V[POS2D(i,j-1,imax+2)]=-V[POS2D(i+1,j-1,imax+2)];
 					U[POS2D(i,j,imax+2)]=0;
+					TEMP[POS2D(i,j,imax+2)] = TEMP[POS2D(i+1,j,imax+2)];
 					break;		
 				case 13:		//13 entspricht B_NO Nord-Ost-Kantenzelle
 					U[POS2D(i-1,j,imax+2)]=-U[POS2D(i-1,j+1,imax+2)];
 					V[POS2D(i,j-1,imax+2)]=-V[POS2D(i+1,j-1,imax+2)];
 					U[POS2D(i,j,imax+2)]=0;
 					V[POS2D(i,j,imax+2)]=0;
+					TEMP[POS2D(i,j,imax+2)]=oneOverdelxSquaredPlusdelySquared*(delx*delx*TEMP[POS2D(i,j+1,imax+2)]+dely*dely*TEMP[POS2D(i+1,j,imax+2)]);
 					break;			
 				case 11:		//11 entspricht B_SO Sued-Ost-Kantenzelle
 					U[POS2D(i-1,j,imax+2)]=-U[POS2D(i-1,j-1,imax+2)];
 					V[POS2D(i,j,imax+2)]=-V[POS2D(i+1,j,imax+2)];
 					U[POS2D(i,j,imax+2)]=0;
 					V[POS2D(i,j-1,imax+2)]=0;
+					TEMP[POS2D(i,j,imax+2)]=oneOverdelxSquaredPlusdelySquared*(delx*delx*TEMP[POS2D(i,j-1,imax+2)]+dely*dely*TEMP[POS2D(i+1,j,imax+2)]);
 					break;	
 				case 21:		//21 entspricht B_NW Nord-West-Kantenzelle
 					U[POS2D(i,j,imax+2)]=-U[POS2D(i,j+1,imax+2)];
 					V[POS2D(i,j-1,imax+2)]=-V[POS2D(i-1,j-1,imax+2)];
 					U[POS2D(i-1,j,imax+2)]=0;
 					V[POS2D(i,j,imax+2)]=0;
+					TEMP[POS2D(i,j,imax+2)]=oneOverdelxSquaredPlusdelySquared*(delx*delx*TEMP[POS2D(i,j+1,imax+2)]+dely*dely*TEMP[POS2D(i-1,j,imax+2)]);
 					break;
 				case 19:		//19 entspricht B_SW Sued-West-Kantenzelle
 					U[POS2D(i,j,imax+2)]=-U[POS2D(i,j-1,imax+2)];
 					V[POS2D(i,j,imax+2)]=-V[POS2D(i-1,j,imax+2)];
 					U[POS2D(i-1,j,imax+2)]=0;
 					V[POS2D(i,j-1,imax+2)]=0;
+					TEMP[POS2D(i,j,imax+2)]=oneOverdelxSquaredPlusdelySquared*(delx*delx*TEMP[POS2D(i,j-1,imax+2)]+dely*dely*TEMP[POS2D(i-1,j,imax+2)]);
 					break;
 			}
 		}
@@ -262,7 +331,7 @@ void initSouth(double *U, double *V, int imax, int jmax) {
 	}
 }
 
-void setSpecialBoundaryCond (double *U, double*V, int imax, int jmax, char *problem){
+void setSpecialBoundaryCond (double *U, double*V, double *TEMP, int imax, int jmax, char *problem){
 	if((strcmp(problem,"Driven cavity") == 0) || (strcmp(problem,"DC") == 0) || (strcmp(problem,"driven cavity") == 0)){
 		initDrivenCavity(U, V, imax, jmax);
 	}

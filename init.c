@@ -43,8 +43,9 @@ void parameterError(char *param) {
 
 void readParameter(char *filename, char *simulationName, char *heightMap, double *xlength, double *ylength, int *imax, int *jmax, 
 	double *delx, double *dely, double *delt, double *del_vec, double *t_end, double *tau, int *itermax,
-	double *eps, double *omg, double *alpha, double *Re, double *GX, double *GY, double *UI, double *VI, double *PI, 
-	int *wl, int *wr, int *wt, int *wb, double *posx1, double *posx2, double *posy1, double *posy2) {
+	double *eps, double *omg, double *alpha, double *Re, double *Pr, double *beta, double *GX, double *GY, double *UI, double *VI, double *PI, 
+	double *TI, int *wl, int *wr, int *wt, int *wb, double *posx1, double *posx2, double *posy1, double *posy2,
+	int *tl, double *tl_value, int *tr, double *tr_value, int *tt, double *tt_value, int *tb, double *tb_value) {
 	FILE *f = fopen(filename, "r");
 	if (f == NULL) {
 		printf("Error opening parameter file\n");
@@ -85,6 +86,10 @@ void readParameter(char *filename, char *simulationName, char *heightMap, double
 		parameterError("alpha");
 	if (fscanf(f, "%*s = %lf\n", Re) != 1)
 		parameterError("Re");
+	if (fscanf(f, "%*s = %lf\n", Pr) != 1)
+		parameterError("Pr");
+	if (fscanf(f, "%*s = %lf\n", beta) != 1)
+		parameterError("beta");
 	if (fscanf(f, "%*s = %lf\n", GX) != 1)
 		parameterError("GX");
 	if (fscanf(f, "%*s = %lf\n", GY) != 1)
@@ -95,13 +100,15 @@ void readParameter(char *filename, char *simulationName, char *heightMap, double
 		parameterError("VI");
 	if (fscanf(f, "%*s = %lf\n", PI) != 1)
 		parameterError("PI");
-	if (fscanf(f, "%*s = %i\n", wl) != 1)
+	if (fscanf(f, "%*s = %lf\n", TI) != 1)
+		parameterError("TI");
+	if (fscanf(f, "%*s = %i %i %lf\n", wl, tl, tl_value) != 1)
 		parameterError("wl");
-	if (fscanf(f, "%*s = %i\n", wr) != 1)
+	if (fscanf(f, "%*s = %i %i %lf\n", wr, tr, tr_value) != 1)
 		parameterError("wr");
-	if (fscanf(f, "%*s = %i\n", wt) != 1)
+	if (fscanf(f, "%*s = %i %i %lf\n", wt, tt, tt_value) != 1)
 		parameterError("wt");
-	if (fscanf(f, "%*s = %i\n", wb) != 1)
+	if (fscanf(f, "%*s = %i %i %lf\n", wb, tb, tb_value) != 1)
 		parameterError("wb");
 	if (fscanf(f, "%*s = %lf\n", posx1) != 1)
 		parameterError("posx1");

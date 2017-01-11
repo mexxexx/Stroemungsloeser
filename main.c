@@ -19,8 +19,9 @@ int currentProgressStep = 1;
 time_t start;
 
 char simulationName[256], problem[256];
-int imax, jmax, itermax, wl, wr, wt, wb, numFluidCells, partCount, anzahl;
-double xlength, ylength, delx, dely, delt, t_end, del_vec, tau, eps, omg, alpha, Re, GX, GY, UI, VI, PI, posx1, posx2, posy1, posy2;
+int imax, jmax, itermax, wl, wr, wt, wb, numFluidCells, partCount, anzahl, tl, tr, tt, tb;
+double xlength, ylength, delx, dely, delt, t_end, del_vec, tau, eps, omg, alpha, Re, Pr, beta, GX, GY, UI, VI, PI, TI, posx1, posx2, posy1, posy2;
+double tl_value, tr_value, tt_value, tb_value;
 
 void createSimulationDirectory() {
 	struct stat st = {0};
@@ -39,22 +40,26 @@ void createSimulationDirectory() {
 	}
 }
 
-void printSnapshot(int currentSnapshot, double *U, double *V, double *P,double *PSI, double *ZETA, Particle *particles, int partCount, double t) {
+void printSnapshot(int currentSnapshot, double *U, double *V, double *P, double *TEMP, 
+					double *PSI, double *ZETA, double *HEAT, Particle *particles, int partCount, double t) {
 	char nameOfVelocity[256];
 	char nameOfPressure[256];
 	char nameOfParticles[256];
 	char nameOfPSI[256];
 	char nameOfZETA[256];
+	char nameOfHEAT[256];
 	sprintf(nameOfVelocity, "%s/%s_velocity_%05d.vtk", simulationName, simulationName, currentSnapshot);
 	sprintf(nameOfParticles, "%s/%s_particles_%05d.vtk", simulationName, simulationName, currentSnapshot);
 	sprintf(nameOfPressure, "%s/%s_pressure_%05d.vtk", simulationName, simulationName, currentSnapshot++);
 	sprintf(nameOfPSI, "%s/%s_PSI_%05d.vtk", simulationName, simulationName, currentSnapshot);
-	sprintf(nameOfZETA, "%s/%s_ZETA_%05d.vtk", simulationName, simulationName, currentSnapshot);	
+	sprintf(nameOfZETA, "%s/%s_ZETA_%05d.vtk", simulationName, simulationName, currentSnapshot);
+	sprintf(nameOfZETA, "%s/%s_HEAT_%05d.vtk", simulationName, simulationName, currentSnapshot);	
 	printVectorField(U, V, imax, jmax, xlength, ylength, nameOfVelocity); 
 	printScalarField(P, imax, jmax, xlength, ylength, nameOfPressure);
 	printParticles(particles, partCount, nameOfParticles);
 	printScalarField(PSI, imax, jmax, xlength, ylength, nameOfPSI);
 	printScalarField(ZETA, imax, jmax, xlength, ylength, nameOfZETA);
+	printScalarField(HEAT, imax, jmax, xlength, ylength, nameOfHEAT);
 	
 	double progress = t/t_end; 
 	if (progress >= PROGRESS_DISPLAY * currentProgressStep) {
@@ -79,7 +84,8 @@ void printCharField(char *field, int imax, int jmax) {
 	}
 }
 
-int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG,double *PSI, double *ZETA, Particle *particles, int partCount) {
+int calculateFluidDynamics(double* U, double* V, double* P, double *TEMP, char* FLAG, double *PSI, double *ZETA, 
+							double *HEAT, Particle *particles, int partCount) {
 	initField(U, imax, jmax, UI);
 	if (strcmp("Stufe", problem) == 0) {
 		for (int i = 1; i <= imax; i++) 
@@ -89,6 +95,7 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG,double *P
 	
 	initField(V, imax, jmax, VI);
 	initField(P, imax, jmax, PI);
+	initField(TEMP, imax, jmax, TI);
 	
 	double *F, *G, *rhs;
 	if (allocateVector(&F, (imax+2) * (jmax+2)))
@@ -113,16 +120,17 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG,double *P
 	
 	while (t < t_end) {
 		computeDelt(&delt, imax, jmax, delx, dely, umax, vmax, Re, tau);
-		setBoundaryCond(U, V, FLAG, imax, jmax, wl, wr, wt, wb);
-		setSpecialBoundaryCond(U, V, imax, jmax, problem);
+		setBoundaryCond(U, V, TEMP, FLAG, delx, dely, imax, jmax, wl, wr, wt, wb, tl, tl_value, tr, tr_value, tt, tt_value, tb, tb_value);
+		setSpecialBoundaryCond(U, V, TEMP, imax, jmax, problem);
 		computeFG(U, V, F, G, FLAG, imax, jmax, delt, delx, dely, GX, GY, alpha, Re);
 		computeRHS(F, G, rhs, FLAG, imax, jmax, delt, delx, dely);
 		solvePoisson(P, rhs, FLAG, omg, eps, itermax, delx, dely, imax, jmax, numFluidCells);
 		adapUV(U, V, F, G, P, FLAG, imax, jmax, delt, delx, dely, &umax, &vmax); 
 		COMP_PSI_ZETA(U, V, imax, jmax, xlength, ylength, PSI, ZETA, FLAG);
+		COMP_HEAT(U, V, TEMP, HEAT, FLAG, Re, Pr, imax, jmax, delx, dely);
 
 		if (partCount > 0) {
-			if (seedTime >= PARTICLE_DELTA) {/*Before: 0.025*/
+			if (seedTime >= PARTICLE_DELTA) {
 				particleSeed(particles, posx1, posy1, posx2, posy2, partCount, anzahl);
 				seedTime -= PARTICLE_DELTA;
 			}
@@ -131,7 +139,7 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG,double *P
 		}
 
 		if (frameDuration >= del_vec) {
-			printSnapshot(currentSnapshot++, U, V, P, PSI, ZETA, particles, partCount, t);
+			printSnapshot(currentSnapshot++, U, V, P, TEMP, PSI, ZETA, HEAT, particles, partCount, t);
 			frameDuration -= del_vec;
 		}
 		t += delt;
@@ -139,7 +147,7 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG,double *P
 		seedTime += delt;
 	}
 	
-	printSnapshot(currentSnapshot, U, V, P, PSI, ZETA, particles, partCount, t_end);
+	printSnapshot(currentSnapshot, U, V, P, TEMP, PSI, ZETA, HEAT, particles, partCount, t_end);
 	printf("%i frames taken in a time period of %.2f seconds (%.1f FPS)\n", currentSnapshot, t_end, currentSnapshot/t_end);
 	printf("Duration: %.1f seconds\n", (double)(time(NULL)-start)); 
 	free(F);
@@ -198,11 +206,12 @@ int main(int argc, char** argv) {
 	particleInit(particles, partCount);
 	char obstacelsMap[256];
 	readParameter(file, simulationName, obstacelsMap, &xlength, &ylength, &imax, &jmax, &delx, &dely, &delt, 
-							&del_vec, &t_end, &tau, &itermax, &eps, &omg, &alpha, &Re, &GX, &GY, &UI, &VI, &PI, &wl, &wr, &wt, &wb,
-							&posx1, &posx2, &posy1, &posy2);
+							&del_vec, &t_end, &tau, &itermax, &eps, &omg, &alpha, &Re, &Pr, &beta, &GX, &GY, 
+							&UI, &VI, &PI, &TI, &wl, &wr, &wt, &wb, &posx1, &posx2, &posy1, &posy2,
+							&tl, &tl_value, &tr, &tr_value, &tt, &tt_value, &tb, &tb_value);
 	
 	createSimulationDirectory();
-	anzahl = (int)((sqrt((posx1-posx2)*(posx1-posx2)+(posy1-posy2)*(posy1-posy2)))*30)+1;
+	anzahl = (int)((sqrt((posx1-posx2)*(posx1-posx2)+(posy1-posy2)*(posy1-posy2)))*10)+1;
 	
 	char *FLAG = (char*)malloc((imax+2) * (jmax+2) * sizeof(char));
 	if (FLAG == NULL) {
@@ -217,16 +226,18 @@ int main(int argc, char** argv) {
 	sprintf(obstacleFile, "%s/obstacles.vtk", simulationName);
 	printObstacles(FLAG, imax, jmax, xlength, ylength, obstacleFile);
 	
-	double *U, *V, *P,*PSI,*ZETA;
+	double *U, *V, *P, *TEMP, *PSI, *ZETA, *HEAT;
 	if (allocateVector(&U, (imax+2) * (jmax+2))) {
 		free(particles);
 		free(FLAG);
+		printf("Konnte keinen Speicherplatz fuer U allokieren");
 		return 1;
 	}
 	if (allocateVector(&V, (imax+2) * (jmax+2))) {
 		free(particles);
 		free(FLAG);
 		free(U);
+		printf("Konnte keinen Speicherplatz fuer V allokieren");
 		return 1;
 	}
 	if (allocateVector(&P, (imax+2) * (jmax+2))) {
@@ -234,6 +245,7 @@ int main(int argc, char** argv) {
 		free(FLAG);
 		free(U);
 		free(V);
+		printf("Konnte keinen Speicherplatz fuer P allokieren");
 		return 1;
 	}
 	if (allocateVector(&PSI, (imax+2) * (jmax+2))) {
@@ -242,6 +254,7 @@ int main(int argc, char** argv) {
 		free(U);
 		free(V);
 		free(P);
+		printf("Konnte keinen Speicherplatz fuer PSI allokieren");
 		return 1;
 	}	
 	if (allocateVector(&ZETA, (imax+2) * (jmax+2))) {
@@ -251,10 +264,34 @@ int main(int argc, char** argv) {
 		free(V);
 		free(P);
 		free(PSI);
+		printf("Konnte keinen Speicherplatz fuer ZETA allokieren");
+		return 1;
+	}
+	if (allocateVector(&TEMP, (imax+2) * (jmax+2))) {
+		free(particles);
+		free(FLAG);
+		free(U);
+		free(V);
+		free(P);
+		free(PSI);
+		free(ZETA);
+		printf("Konnte keinen Speicherplatz fuer TEMP allokieren");
+		return 1;
+	}
+	if (allocateVector(&HEAT, (imax+2) * (jmax+2))) {
+		free(particles);
+		free(FLAG);
+		free(U);
+		free(V);
+		free(P);
+		free(PSI);
+		free(ZETA);
+		free(TEMP);
+		printf("Konnte keinen Speicherplatz fuer HEAT allokieren");
 		return 1;
 	}
 	
-	calculateFluidDynamics(U, V, P, FLAG, PSI, ZETA, particles, partCount);
+	calculateFluidDynamics(U, V, P, TEMP, FLAG, PSI, ZETA, HEAT, particles, partCount);
 	
 	free(particles);
 	free(FLAG);

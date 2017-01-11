@@ -129,3 +129,18 @@ void COMP_PSI_ZETA(double *U, double *V, int imax, int jmax, double xlength, dou
 		}	
 	}	
 }
+
+void COMPT_HEAT(double *U, double*V, double *TEMP, double *HEAT, double *FLAG, double Re, double Pr, 
+				int imax, int jmax, double delx, double dely) {
+	for (int i = 0; i <= imax; i++) {
+		for (int j = 1; j <= jmax; j++) {
+			H[POS2D(i, j, imax+2)] = H[POS2D(i, j-1, imax+2)];
+			
+			if (!FLAG[POS2D(i, j, imax+2)]) 
+				H[POS2D(i, j, imax+2)] += dely * (Re * Pr * U[POS2D(i, j, imax+2)] * 0.5 * (TEMP[POS2D(i+1, j, imax+2)] + 
+							TEMP[POS2D(i+1, j, imax+2)]) - (TEMP[POS2D(i+1, j, imax+2)] - TEMP[POS2D(i+1, j, imax+2)]) / delx);
+	} 
+	
+	for (int i = 0; i <= imax; i++) {
+		H[POS2D(i, 0, imax+2)] = 0;
+}
