@@ -60,16 +60,15 @@ void solvePoisson(double *p, double *rhs, char *FLAG, double omega, double epsil
 		printf("Abgebrochen nach %i iterationen mit einem Fehler von %f\n", iter, error);
 }
 
-double min (double a, double b, double c) {
+double min (double a, double b) {
 	double min = a;
 	if (b < min) min = b;
-	if (c < min) min = c;
 	return min;
 }
 
-void computeDelt(double *delt, int imax, int jmax, double delx, double dely, double umax, double vmax, double Re, double tau) {
+void computeDelt(double *delt, int imax, int jmax, double delx, double dely, double umax, double vmax, double Re, double Pr, double tau) {
 	if (tau >= 0) {
-		(*delt) = min(Re/(2*(1/(delx*delx) + 1/(dely*dely))), delx/umax, dely/vmax);
+		(*delt) = min(0.5 * Re * 1/(1/(delx*delx) + 1/(dely*dely)), min(delx/umax, min(dely/vmax, 0.5 * Re * Pr * 1/(1/(delx*delx) + 1/(dely*dely)))));
 		(*delt) *= tau;
 	}
 }
@@ -159,15 +158,12 @@ void computeFG(double *U, double *V, double *F, double *G, double *TEMP, char *F
 /*Erweiterung um Boussinesq-Term nach Energiegleichung: */
 
 	for (int i = 1; i <= imax; i++) {
-		for (int j = 1; j <= jmax; j++) {
-			
+		for (int j = 1; j <= jmax; j++) {	
 			F[POS2D(i,j,imax+2)]=F[POS2D(i,j,imax+2)]-beta*0.5*delt*(TEMP[POS2D(i,j,imax+2)]+TEMP[POS2D(i+1,j,imax+2)])*GX;
 			G[POS2D(i,j,imax+2)]=G[POS2D(i,j,imax+2)]-beta*0.5*delt*(TEMP[POS2D(i,j,imax+2)]+TEMP[POS2D(i,j+1,imax+2)])*GY;
-
 		}
 	}
 
-	
 	for (int j = 1; j <= jmax; j++) {
 		F[POS2D(0,j,imax+2)] = U[POS2D(0,j,imax+2)];
 		F[POS2D(imax,j,imax+2)] = U[POS2D(imax,j,imax+2)];
@@ -230,24 +226,37 @@ void computeTEMP(double *U, double *V, double *TEMP, char *FLAG,  int imax,
 	double dTt;
 	double oneOverDelX = 1 / delx;	
 	double oneOverDelY = 1 / dely;
-	
+	double uij, uiMj, vij, vijM, Tij, TiPj, TiMj, TijP, TijM;
 
 	for(int i=1; i<=imax; i++){
-
 		for(int j=1; j<=jmax; j++){
+			uij = U[POS2D(i, j, imax+2)];
+			uiMj = U[POS2D(i-1, j, imax+2)];
+			vij = V[POS2D(i, j, imax+2)];
+			vijM = V[POS2D(i, j-1, imax+2)];
+			
+			Tij = TEMP[POS2D(i, j, imax+2)];
+			TiPj = TEMP[POS2D(i+1, j, imax+2)];
+			TiMj = TEMP[POS2D(i-1, j, imax+2)];
+			TijP = TEMP[POS2D(i, j+1, imax+2)];
+			TijM = TEMP[POS2D(i, j-1, imax+2)];
 
-			duTx=(oneOverDelX*(U[POS2D(i, j, imax+2)]*((TEMP[POS2D(i, j, imax+2)]+TEMP[POS2D(i+1, j, imax+2)])*0.5)-U[POS2D(i-1, j, imax+2)]*((TEMP[POS2D(i-1, j, imax+2)]+TEMP[POS2D(i, j, imax+2)])*0.5)))+alpha*oneOverDelX*(fabs(U[POS2D(i, j, imax+2)])*((TEMP[POS2D(i, j, imax+2)]-TEMP[POS2D(i+1, j, imax+2)])*0.5)-fabs(U[POS2D(i-1, j, imax+2)])*((TEMP[POS2D(i-1, j, imax+2)]-TEMP[POS2D(i, j, imax+2)])*0.5));
+			//duTx=(oneOverDelX*(U[POS2D(i, j, imax+2)]*((TEMP[POS2D(i, j, imax+2)]+TEMP[POS2D(i+1, j, imax+2)])*0.5)-U[POS2D(i-1, j, imax+2)]*((TEMP[POS2D(i-1, j, imax+2)]+TEMP[POS2D(i, j, imax+2)])*0.5)))+alpha*oneOverDelX*(fabs(U[POS2D(i, j, imax+2)])*((TEMP[POS2D(i, j, imax+2)]-TEMP[POS2D(i+1, j, imax+2)])*0.5)-fabs(U[POS2D(i-1, j, imax+2)])*((TEMP[POS2D(i-1, j, imax+2)]-TEMP[POS2D(i, j, imax+2)])*0.5));
+			duTx = oneOverDelX * 0.5 * (uij*(Tij+TiPj)-uiMj*(TiMj+Tij)+alpha*(fabs(uij)*(Tij-TiPj)-fabs(uiMj)*(TiMj-Tij)));
+			dvTy = oneOverDelY * 0.5 * (vij*(Tij+TijP)-vijM*(TijM+Tij)+alpha*(fabs(vij)*(Tij-TijP)-fabs(vijM)*(TijM-Tij)));
+			
+			//dvTy=(oneOverDelY*(V[POS2D(i, j, imax+2)]*((TEMP[POS2D(i, j, imax+2)]+TEMP[POS2D(i, j+1, imax+2)])*0.5)-V[POS2D(i, j-1, imax+2)]*((TEMP[POS2D(i, j-1, imax+2)]+TEMP[POS2D(i, j, imax+2)])*0.5)))+alpha*oneOverDelY*(fabs(V[POS2D(i, j, imax+2)])*((TEMP[POS2D(i, j, imax+2)]-TEMP[POS2D(i, j+1, imax+2)])*0.5)-fabs(V[POS2D(i, j-1, imax+2)])*((TEMP[POS2D(i, j-1, imax+2)]-TEMP[POS2D(i, j, imax+2)])*0.5));
 
-			dvTy=(oneOverDelY*(V[POS2D(i, j, imax+2)]*((TEMP[POS2D(i, j, imax+2)]+TEMP[POS2D(i, j+1, imax+2)])*0.5)-V[POS2D(i, j-1, imax+2)]*((TEMP[POS2D(i, j-1, imax+2)]+TEMP[POS2D(i, j, imax+2)])*0.5)))+alpha*oneOverDelY*(fabs(V[POS2D(i, j, imax+2)])*((TEMP[POS2D(i, j, imax+2)]-TEMP[POS2D(i, j+1, imax+2)])*0.5)-fabs(V[POS2D(i, j-1, imax+2)])*((TEMP[POS2D(i, j-1, imax+2)]-TEMP[POS2D(i, j, imax+2)])*0.5));
+			//ddTxx=oneOverDelX*oneOverDelX*(TEMP[POS2D(i+1, j, imax+2)]-2*TEMP[POS2D(i, j, imax+2)]+TEMP[POS2D(i-1, j, imax+2)]);
+			ddTxx = oneOverDelX*oneOverDelX*(TiPj-2*Tij+TiMj);
+			ddTyy = oneOverDelY*oneOverDelY*(TijP-2*Tij+TijM);
+			
+			//ddTyy=oneOverDelY*oneOverDelY*(TEMP[POS2D(i, j+1, imax+2)]-2*TEMP[POS2D(i, j, imax+2)]+TEMP[POS2D(i, j-1, imax+2)]);
 
-			ddTxx=oneOverDelX*oneOverDelX*(TEMP[POS2D(i+1, j, imax+2)]-2*TEMP[POS2D(i, j, imax+2)]+TEMP[POS2D(i-1, j, imax+2)]);
+			//dTt=(1./Re)*(1./Pr)*(ddTxx+ddTyy)-duTx-dvTy;
 	
-			ddTyy=oneOverDelY*oneOverDelY*(TEMP[POS2D(i, j+1, imax+2)]-2*TEMP[POS2D(i, j, imax+2)]+TEMP[POS2D(i, j-1, imax+2)]);
-
-			dTt=(1./Re)*(1./Pr)*(ddTxx+ddTyy)-duTx-dvTy;
-	
-			TEMP[POS2D(i+1, j, imax+2)]=delt*dTt+TEMP[POS2D(i+1, j, imax+2)];
-
+			//TEMP[POS2D(i+1, j, imax+2)]=delt*dTt+TEMP[POS2D(i+1, j, imax+2)];
+			TEMP[POS2D(i, j, imax+2)] = delt*((1./Re)*(1./Pr)*(ddTxx+ddTyy)-duTx-dvTy)+Tij;
 		}
 	}
 

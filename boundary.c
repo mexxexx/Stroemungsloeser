@@ -61,11 +61,11 @@ void setBoundaryCond(double *U, double *V, double *TEMP, char *FLAG, double delx
 	switch(tl){
 		case 1:
 			for (int j = 1; j <= jmax; j++)
-				TEMP[POS2D(0, j, imax+2)] = 2*tl_value*((j-0.5)*dely) - TEMP[POS2D(1, j, imax+2)];
+				TEMP[POS2D(0, j, imax+2)] = 2*tl_value - TEMP[POS2D(1, j, imax+2)];
 			break;
 		case 2:
 			for (int j = 1; j <= jmax; j++) 
-				TEMP[POS2D(0, j, imax+2)] = TEMP[POS2D(1, j, imax+2)] + delx*tl_value*((j-0.5)*dely);
+				TEMP[POS2D(0, j, imax+2)] = TEMP[POS2D(1, j, imax+2)] + delx*tl_value;
 			break;
 		default: 
 			printf("Randbedingung nicht zulaessig.\n"); 
@@ -101,11 +101,11 @@ void setBoundaryCond(double *U, double *V, double *TEMP, char *FLAG, double delx
 	switch(tr){
 		case 1:
 			for (int j = 1; j <= jmax; j++)
-				TEMP[POS2D(imax+1, j, imax+2)] = 2*tl_value*((j-0.5)*dely) - TEMP[POS2D(imax, j, imax+2)];
+				TEMP[POS2D(imax+1, j, imax+2)] = 2*tr_value - TEMP[POS2D(imax, j, imax+2)];
 			break;
 		case 2:
 			for (int j = 1; j <= jmax; j++) 
-				TEMP[POS2D(imax+1, j, imax+2)] = TEMP[POS2D(imax, j, imax+2)] + delx*tl_value*((j-0.5)*dely);
+				TEMP[POS2D(imax+1, j, imax+2)] = TEMP[POS2D(imax, j, imax+2)] + delx*tr_value;
 			break;
 		default: 
 			printf("Randbedingung nicht zulaessig.\n"); 
@@ -141,11 +141,11 @@ void setBoundaryCond(double *U, double *V, double *TEMP, char *FLAG, double delx
 	switch(tt){
 		case 1:
 			for (int i = 1; i <= imax; i++)
-				TEMP[POS2D(i, 0, imax+2)] = 2*tl_value*((i-0.5)*delx) - TEMP[POS2D(i, 1, imax+2)];
+				TEMP[POS2D(i, 0, imax+2)] = 2*tt_value - TEMP[POS2D(i, 1, imax+2)];
 			break;
 		case 2:
 			for (int i = 1; i <= imax; i++)
-				TEMP[POS2D(i, 0, imax+2)] = TEMP[POS2D(i, 1, imax+2)] + dely*tl_value*((i-0.5)*delx);
+				TEMP[POS2D(i, 0, imax+2)] = TEMP[POS2D(i, 1, imax+2)] + dely*tt_value;
 			break;
 		default: 
 			printf("Randbedingung nicht zulaessig.\n"); 
@@ -181,11 +181,11 @@ void setBoundaryCond(double *U, double *V, double *TEMP, char *FLAG, double delx
 	switch(tb){
 		case 1:
 			for (int i = 1; i <= imax; i++)
-				TEMP[POS2D(i, jmax+1, imax+2)] = 2*tl_value*((i-0.5)*delx) - TEMP[POS2D(i, jmax, imax+2)];
+				TEMP[POS2D(i, jmax+1, imax+2)] = 2*tb_value - TEMP[POS2D(i, jmax, imax+2)];
 			break;
 		case 2:
 			for (int i = 1; i <= imax; i++)
-				TEMP[POS2D(i, jmax+1, imax+2)] = TEMP[POS2D(i, jmax, imax+2)] + dely*tl_value*((i-0.5)*delx);
+				TEMP[POS2D(i, jmax+1, imax+2)] = TEMP[POS2D(i, jmax, imax+2)] + dely*tb_value;
 			break;
 		default: 
 			printf("Randbedingung nicht zulaessig.\n"); 
@@ -349,6 +349,9 @@ void setSpecialBoundaryCond (double *U, double*V, double *TEMP, int imax, int jm
 	}
 	else if(strcmp(problem, "Stufe") == 0){
 		initWest(U, V, imax, jmax);
+	}
+	else if(strcmp(problem, "Temperatur") == 0){
+		
 	}
 	else
 		printf("Unbekanntes Problem");	

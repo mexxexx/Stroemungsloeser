@@ -102,13 +102,13 @@ void readParameter(char *filename, char *simulationName, char *heightMap, double
 		parameterError("PI");
 	if (fscanf(f, "%*s = %lf\n", TI) != 1)
 		parameterError("TI");
-	if (fscanf(f, "%*s = %i %i %lf\n", wl, tl, tl_value) != 1)
+	if (fscanf(f, "%*s = %i %i %lf\n", wl, tl, tl_value) != 3)
 		parameterError("wl");
-	if (fscanf(f, "%*s = %i %i %lf\n", wr, tr, tr_value) != 1)
+	if (fscanf(f, "%*s = %i %i %lf\n", wr, tr, tr_value) != 3)
 		parameterError("wr");
-	if (fscanf(f, "%*s = %i %i %lf\n", wt, tt, tt_value) != 1)
+	if (fscanf(f, "%*s = %i %i %lf\n", wt, tt, tt_value) != 3)
 		parameterError("wt");
-	if (fscanf(f, "%*s = %i %i %lf\n", wb, tb, tb_value) != 1)
+	if (fscanf(f, "%*s = %i %i %lf\n", wb, tb, tb_value) != 3)
 		parameterError("wb");
 	if (fscanf(f, "%*s = %lf\n", posx1) != 1)
 		parameterError("posx1");

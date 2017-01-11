@@ -13,7 +13,7 @@
 void solvePoisson(double *p, double *rhs, char *FLAG, double omega, double epsilon, int itermax, double deltaX, double deltaY, int imax, int jmax, int numFluidCells);
 
 void computeDelt(double *delt, int imax, int jmax, double delx, double dely, 
-					double umax, double vmax, double Re, double tau);
+					double umax, double vmax, double Re, double Pr, double tau);
 
 void computeRHS(double *F, double *G, double *rhs, char *FLAG, int imax, int jmax, double delt, double delx, double dely);
 					

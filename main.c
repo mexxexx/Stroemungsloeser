@@ -56,7 +56,7 @@ void printSnapshot(int currentSnapshot, double *U, double *V, double *P, double 
 	sprintf(nameOfPressure, "%s/%s_pressure_%05d.vtk", simulationName, simulationName, currentSnapshot++);
 	sprintf(nameOfPSI, "%s/%s_PSI_%05d.vtk", simulationName, simulationName, currentSnapshot);
 	sprintf(nameOfZETA, "%s/%s_ZETA_%05d.vtk", simulationName, simulationName, currentSnapshot);
-	sprintf(nameOfZETA, "%s/%s_HEAT_%05d.vtk", simulationName, simulationName, currentSnapshot);	
+	sprintf(nameOfHEAT, "%s/%s_HEAT_%05d.vtk", simulationName, simulationName, currentSnapshot);	
 	sprintf(nameOfTEMP, "%s/%s_TEMP_%05d.vtk", simulationName, simulationName, currentSnapshot);	
 	printVectorField(U, V, imax, jmax, xlength, ylength, nameOfVelocity); 
 	printScalarField(P, imax, jmax, xlength, ylength, nameOfPressure);
@@ -124,7 +124,7 @@ int calculateFluidDynamics(double* U, double* V, double* P, double *TEMP, char* 
 	start = time(NULL);
 	
 	while (t < t_end) {
-		computeDelt(&delt, imax, jmax, delx, dely, umax, vmax, Re, tau);
+		computeDelt(&delt, imax, jmax, delx, dely, umax, vmax, Re, Pr, tau);
 		setBoundaryCond(U, V, TEMP, FLAG, delx, dely, imax, jmax, wl, wr, wt, wb, tl, tl_value, tr, tr_value, tt, tt_value, tb, tb_value);
 		setSpecialBoundaryCond(U, V, TEMP, imax, jmax, problem);
 		computeTEMP(U, V, TEMP, FLAG, imax, 
@@ -308,5 +308,7 @@ int main(int argc, char** argv) {
 	free(P);
 	free(PSI);
 	free(ZETA);
+	free(TEMP);
+	free(HEAT);
 	return 0;
 }

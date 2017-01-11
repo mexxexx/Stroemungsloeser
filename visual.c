@@ -10,7 +10,7 @@ void printScalarField(double *field, int imax, int jmax, double xlength, double 
 	FILE *f = fopen(filename, "w");
 	if (f == NULL)
 	{
-		printf("Error opening file!\n");
+		printf("Error opening file! %s\n", filename);
 		return;
 	}
 	
@@ -79,7 +79,7 @@ void printObstacles(char *field, int imax, int jmax, double xlength, double ylen
 	FILE *f = fopen(filename, "w");
 	if (f == NULL)
 	{
-		printf("Error opening file!\n");
+		printf("Error opening file %s!\n", filename);
 		return;
 	}
 	
@@ -132,13 +132,13 @@ void COMP_PSI_ZETA(double *U, double *V, int imax, int jmax, double xlength, dou
 
 void COMP_HEAT(double *U, double*V, double *TEMP, double *HEAT, char *FLAG, double Re, double Pr, 
 				int imax, int jmax, double delx, double dely) {
-	for (int i = 0; i <= imax; i++) {
-		for (int j = 1; j <= jmax; j++) {
+	for (int j = 1; j <= jmax; j++) {
+		for (int i = 0; i <= imax; i++) {
 			HEAT[POS2D(i, j, imax+2)] = HEAT[POS2D(i, j-1, imax+2)];
 			
 			if (!FLAG[POS2D(i, j, imax+2)]) 
 				HEAT[POS2D(i, j, imax+2)] += dely * (Re * Pr * U[POS2D(i, j, imax+2)] * 0.5 * (TEMP[POS2D(i+1, j, imax+2)] + 
-							TEMP[POS2D(i+1, j, imax+2)]) - (TEMP[POS2D(i+1, j, imax+2)] - TEMP[POS2D(i+1, j, imax+2)]) / delx);
+							TEMP[POS2D(i, j, imax+2)]) - (TEMP[POS2D(i+1, j, imax+2)] - TEMP[POS2D(i, j, imax+2)]) / delx);
 		}
 	} 
 	
