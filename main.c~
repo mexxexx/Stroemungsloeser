@@ -40,32 +40,44 @@ void createSimulationDirectory() {
 	}
 }
 
-
+<<<<<<< HEAD
 void printSnapshot(int currentSnapshot, double *U, double *V, double *P, double *TEMP, 
 					double *PSI, double *ZETA, double *HEAT, Particle *particles, int partCount, double t) {
-
+=======
+void printSnapshot(int currentSnapshot, double *U, double *V, double *P, double *PSI, double *ZETA, Particle *particles, int partCount, double t) {
+>>>>>>> heat
 	char nameOfVelocity[256];
 	char nameOfPressure[256];
 	char nameOfParticles[256];
 	char nameOfPSI[256];
 	char nameOfZETA[256];
+<<<<<<< HEAD
 	char nameOfHEAT[256];
+=======
 	char nameOfTEMP[256];
+>>>>>>> heat
 	sprintf(nameOfVelocity, "%s/%s_velocity_%05d.vtk", simulationName, simulationName, currentSnapshot);
 	sprintf(nameOfParticles, "%s/%s_particles_%05d.vtk", simulationName, simulationName, currentSnapshot);
 	sprintf(nameOfPressure, "%s/%s_pressure_%05d.vtk", simulationName, simulationName, currentSnapshot++);
 	sprintf(nameOfPSI, "%s/%s_PSI_%05d.vtk", simulationName, simulationName, currentSnapshot);
 	sprintf(nameOfZETA, "%s/%s_ZETA_%05d.vtk", simulationName, simulationName, currentSnapshot);
+<<<<<<< HEAD
 	sprintf(nameOfZETA, "%s/%s_HEAT_%05d.vtk", simulationName, simulationName, currentSnapshot);	
+=======
 	sprintf(nameOfTEMP, "%s/%s_TEMP_%05d.vtk", simulationName, simulationName, currentSnapshot);	
+>>>>>>> heat
 	printVectorField(U, V, imax, jmax, xlength, ylength, nameOfVelocity); 
 	printScalarField(P, imax, jmax, xlength, ylength, nameOfPressure);
 	printParticles(particles, partCount, nameOfParticles);
 	printScalarField(PSI, imax, jmax, xlength, ylength, nameOfPSI);
 	printScalarField(ZETA, imax, jmax, xlength, ylength, nameOfZETA);
+<<<<<<< HEAD
 	printScalarField(HEAT, imax, jmax, xlength, ylength, nameOfHEAT);
+	
+=======
 	printScalarField(TEMP, imax, jmax, xlength, ylength, nameOfTEMP);	
 
+>>>>>>> heat
 	double progress = t/t_end; 
 	if (progress >= PROGRESS_DISPLAY * currentProgressStep) {
 		printf("%.1f%% completed\n", progress * 100);		
@@ -125,11 +137,17 @@ int calculateFluidDynamics(double* U, double* V, double* P, double *TEMP, char* 
 	
 	while (t < t_end) {
 		computeDelt(&delt, imax, jmax, delx, dely, umax, vmax, Re, tau);
+<<<<<<< HEAD
 		setBoundaryCond(U, V, TEMP, FLAG, delx, dely, imax, jmax, wl, wr, wt, wb, tl, tl_value, tr, tr_value, tt, tt_value, tb, tb_value);
 		setSpecialBoundaryCond(U, V, TEMP, imax, jmax, problem);
+		computeFG(U, V, F, G, FLAG, imax, jmax, delt, delx, dely, GX, GY, alpha, Re);
+=======
+		setBoundaryCond(U, V, FLAG, imax, jmax, wl, wr, wt, wb);
+		setSpecialBoundaryCond(U, V, imax, jmax, problem);
 		computeTEMP(U, V, TEMP, FLAG, imax, 
 					jmax, delt, delx, dely, GX, GY, alpha, Re, Pr, beta);
 		computeFG(U, V, F, G, TEMP, FLAG, imax, jmax, delt, delx, dely, GX, GY, alpha, Re, beta);
+>>>>>>> heat
 		computeRHS(F, G, rhs, FLAG, imax, jmax, delt, delx, dely);
 		solvePoisson(P, rhs, FLAG, omg, eps, itermax, delx, dely, imax, jmax, numFluidCells);
 		adapUV(U, V, F, G, P, FLAG, imax, jmax, delt, delx, dely, &umax, &vmax); 
@@ -218,8 +236,11 @@ int main(int argc, char** argv) {
 							&tl, &tl_value, &tr, &tr_value, &tt, &tt_value, &tb, &tb_value);
 	
 	createSimulationDirectory();
-
+<<<<<<< HEAD
 	anzahl = (int)((sqrt((posx1-posx2)*(posx1-posx2)+(posy1-posy2)*(posy1-posy2)))*10)+1;
+=======
+	anzahl = (int)((sqrt((posx1-posx2)*(posx1-posx2)+(posy1-posy2)*(posy1-posy2)))*5)+1;
+>>>>>>> heat
 	
 	char *FLAG = (char*)malloc((imax+2) * (jmax+2) * sizeof(char));
 	if (FLAG == NULL) {

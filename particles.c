@@ -73,8 +73,10 @@ void particleSeed(Particle *particles, double posx1, double posy1, double posx2,
 	if (freePart == 0)
 		return;
 	
-	double horizontal = horizontal=(1./freePart)*fabs(posx2-posx1);
-	double vertical = vertical=(1./freePart)*fabs(posy1-posy2);
+
+	double horizontal=(1./freePart)*fabs(posx2-posx1);
+	double vertical=(1./freePart)*fabs(posy1-posy2);
+
 	for (int i=0;i<partCount;i++) {
 		if(count>anzahl) break;
 

@@ -130,7 +130,7 @@ void COMP_PSI_ZETA(double *U, double *V, int imax, int jmax, double xlength, dou
 	}	
 }
 
-void COMP_HEAT(double *U, double*V, double *TEMP, double *HEAT, char *FLAG, double Re, double Pr, 
+void COMP_HEAT(double *U, double*V, double *TEMP, double *HEAT, double *FLAG, double Re, double Pr, 
 				int imax, int jmax, double delx, double dely) {
 	for (int i = 0; i <= imax; i++) {
 		for (int j = 1; j <= jmax; j++) {
