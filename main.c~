@@ -121,7 +121,7 @@ int calculateFluidDynamics(double* U, double* V, double* P, char* FLAG,double *P
 		setSpecialBoundaryCond(U, V, imax, jmax, problem);
 		computeTEMP(U, V, TEMP, FLAG, imax, 
 					jmax, delt, delx, dely, GX, GY, alpha, Re, Pr, beta);
-		computeFG(U, V, F, G, TEMP, FLAG, imax, jmax, delt, delx, dely, GX, GY, alpha, Re, beta);
+		computeFG(U, V, F, G, FLAG, imax, jmax, delt, delx, dely, GX, GY, alpha, Re);
 		computeRHS(F, G, rhs, FLAG, imax, jmax, delt, delx, dely);
 		solvePoisson(P, rhs, FLAG, omg, eps, itermax, delx, dely, imax, jmax, numFluidCells);
 		adapUV(U, V, F, G, P, FLAG, imax, jmax, delt, delx, dely, &umax, &vmax); 

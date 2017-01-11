@@ -74,8 +74,8 @@ void computeDelt(double *delt, int imax, int jmax, double delx, double dely, dou
 	}
 }
 
-void computeFG(double *U, double *V, double *F, double *G, double *TEMP, char *FLAG, int imax,  int jmax, double delt, 
-				double delx, double dely, double GX, double GY, double alpha, double Re, double beta) {
+void computeFG(double *U, double *V, double *F, double *G, char *FLAG, int imax,  int jmax, double delt, 
+				double delx, double dely, double GX, double GY, double alpha, double Re) {
 	double oneOverDelX = 1 / delx;	
 	double oneOverDelY = 1 / dely;
 	
