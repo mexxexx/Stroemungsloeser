@@ -141,11 +141,11 @@ void setBoundaryCond(double *U, double *V, double *TEMP, char *FLAG, double delx
 	switch(tt){
 		case 1:
 			for (int i = 1; i <= imax; i++)
-				TEMP[POS2D(i, 0, imax+2)] = 2*tt_value - TEMP[POS2D(i, 1, imax+2)];
+				TEMP[POS2D(i, jmax+1, imax+2)] = 2*tt_value - TEMP[POS2D(i, jmax, imax+2)];
 			break;
 		case 2:
 			for (int i = 1; i <= imax; i++)
-				TEMP[POS2D(i, 0, imax+2)] = TEMP[POS2D(i, 1, imax+2)] + dely*tt_value;
+				TEMP[POS2D(i, jmax+1, imax+2)] = TEMP[POS2D(i, jmax, imax+2)] + dely*tt_value;
 			break;
 		default: 
 			printf("Randbedingung nicht zulaessig.\n"); 
@@ -181,11 +181,11 @@ void setBoundaryCond(double *U, double *V, double *TEMP, char *FLAG, double delx
 	switch(tb){
 		case 1:
 			for (int i = 1; i <= imax; i++)
-				TEMP[POS2D(i, jmax+1, imax+2)] = 2*tb_value - TEMP[POS2D(i, jmax, imax+2)];
+				TEMP[POS2D(i, 0, imax+2)] = 2*tb_value - TEMP[POS2D(i, 1, imax+2)];
 			break;
 		case 2:
 			for (int i = 1; i <= imax; i++)
-				TEMP[POS2D(i, jmax+1, imax+2)] = TEMP[POS2D(i, jmax, imax+2)] + dely*tb_value;
+				TEMP[POS2D(i, 0, imax+2)] = TEMP[POS2D(i, 1, imax+2)] + dely*tb_value;
 			break;
 		default: 
 			printf("Randbedingung nicht zulaessig.\n"); 

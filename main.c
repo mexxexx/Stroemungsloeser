@@ -20,7 +20,7 @@ time_t start;
 
 char simulationName[256], problem[256];
 int imax, jmax, itermax, wl, wr, wt, wb, numFluidCells, partCount, anzahl, tl, tr, tt, tb;
-double xlength, ylength, delx, dely, delt, t_end, del_vec, tau, eps, omg, alpha, Re, Pr, beta, GX, GY, UI, VI, PI, TI, posx1, posx2, posy1, posy2;
+double xlength, ylength, delx, dely, delt, delt_min, t_end, del_vec, tau, eps, omg, alpha, Re, Pr, beta, GX, GY, UI, VI, PI, TI, posx1, posx2, posy1, posy2;
 double tl_value, tr_value, tt_value, tb_value;
 
 void createSimulationDirectory() {
@@ -123,19 +123,21 @@ int calculateFluidDynamics(double* U, double* V, double* P, double *TEMP, char* 
 	double vmax = (fabs(VI) > eps) ? VI : eps;
 	start = time(NULL);
 	
+	int iter;
+	double res;
+	
 	while (t < t_end) {
-		computeDelt(&delt, imax, jmax, delx, dely, umax, vmax, Re, Pr, tau);
+		computeDelt(&delt, delt_min, imax, jmax, delx, dely, umax, vmax, Re, Pr, tau);
 		setBoundaryCond(U, V, TEMP, FLAG, delx, dely, imax, jmax, wl, wr, wt, wb, tl, tl_value, tr, tr_value, tt, tt_value, tb, tb_value);
 		setSpecialBoundaryCond(U, V, TEMP, imax, jmax, problem);
-		computeTEMP(U, V, TEMP, FLAG, imax, 
-					jmax, delt, delx, dely, GX, GY, alpha, Re, Pr, beta);
+		computeTEMP(U, V, TEMP, FLAG, imax, jmax, delt, delx, dely, alpha, Re, Pr);
 		computeFG(U, V, F, G, TEMP, FLAG, imax, jmax, delt, delx, dely, GX, GY, alpha, Re, beta);
 		computeRHS(F, G, rhs, FLAG, imax, jmax, delt, delx, dely);
-		solvePoisson(P, rhs, FLAG, omg, eps, itermax, delx, dely, imax, jmax, numFluidCells);
+		solvePoisson(P, rhs, FLAG, omg, eps, itermax, delx, dely, imax, jmax, numFluidCells, &iter, &res);
 		adapUV(U, V, F, G, P, FLAG, imax, jmax, delt, delx, dely, &umax, &vmax); 
 		COMP_PSI_ZETA(U, V, imax, jmax, xlength, ylength, PSI, ZETA, FLAG);
 		COMP_HEAT(U, V, TEMP, HEAT, FLAG, Re, Pr, imax, jmax, delx, dely);
-
+		
 		if (partCount > 0) {
 			if (seedTime >= PARTICLE_DELTA) {
 				particleSeed(particles, posx1, posy1, posx2, posy2, partCount, anzahl);
@@ -146,6 +148,7 @@ int calculateFluidDynamics(double* U, double* V, double* P, double *TEMP, char* 
 		}
 
 		if (frameDuration >= del_vec) {
+			printf("t: %f, delt: %f, iter: %i, res: %f\n", t, delt, iter, res);
 			printSnapshot(currentSnapshot++, U, V, P, TEMP, PSI, ZETA, HEAT, particles, partCount, t);
 			frameDuration -= del_vec;
 		}
@@ -212,7 +215,7 @@ int main(int argc, char** argv) {
 	
 	particleInit(particles, partCount);
 	char obstacelsMap[256];
-	readParameter(file, simulationName, obstacelsMap, &xlength, &ylength, &imax, &jmax, &delx, &dely, &delt, 
+	readParameter(file, simulationName, obstacelsMap, &xlength, &ylength, &imax, &jmax, &delx, &dely, &delt_min, 
 							&del_vec, &t_end, &tau, &itermax, &eps, &omg, &alpha, &Re, &Pr, &beta, &GX, &GY, 
 							&UI, &VI, &PI, &TI, &wl, &wr, &wt, &wb, &posx1, &posx2, &posy1, &posy2,
 							&tl, &tl_value, &tr, &tr_value, &tt, &tt_value, &tb, &tb_value);
@@ -300,6 +303,7 @@ int main(int argc, char** argv) {
 	}
 	
 	calculateFluidDynamics(U, V, P, TEMP, FLAG, PSI, ZETA, HEAT, particles, partCount);
+	printField(TEMP, imax, jmax);
 	
 	free(particles);
 	free(FLAG);

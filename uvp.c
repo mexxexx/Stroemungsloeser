@@ -5,7 +5,7 @@
 #include "uvp.h"
 
 void solvePoisson(double *p, double *rhs, char *FLAG, double omega, double epsilon, int itermax, 
-						double deltaX, double deltaY, int imax, int jmax, int numFluidCells) {
+						double deltaX, double deltaY, int imax, int jmax, int numFluidCells, int* iter, double *res) {
 	const double oneMinusOmega = 1 - omega;
 	const double oneOverDeltaXSquared = 1 / (deltaX * deltaX);
 	const double oneOverDeltaYSquared = 1 / (deltaY * deltaY);
@@ -14,13 +14,13 @@ void solvePoisson(double *p, double *rhs, char *FLAG, double omega, double epsil
 	
 	int ijlocation = 0;
 	
-	double error = 1;
+	*res = 1;
 	double sum = 0;
 	double twoPij = 0;
-	int iter = 0;
+	*iter = 0;
 	int i,j;
-	while (error >= epsilon && iter < itermax) {
-		error = 0;
+	while (*res >= epsilon && *iter < itermax) {
+		*res = 0;
 		applyHomogenousNeumannBC(p, imax, jmax);
 		obstacleBC(p, FLAG, imax, jmax, deltaX, deltaY);
 			
@@ -44,20 +44,18 @@ void solvePoisson(double *p, double *rhs, char *FLAG, double omega, double epsil
 					sum = oneOverDeltaXSquared * (p[ijlocation+1] + p[ijlocation-1] - twoPij) +
 						oneOverDeltaYSquared * (p[ijlocation+imaxPlus2] + p[ijlocation-imaxPlus2] - twoPij) - 
 						rhs[ijlocation];
-					error += sum * sum;
+					*res += sum * sum;
 				}
 			}
 		}
-		error /= numFluidCells;
-		error = sqrt(error);
-		if (PRINT_RES_DEBUG && ((iter < 50 && iter % 5 == 0) || (iter < 500 && iter % 50 == 0) || (iter < 1000 && iter % 100 == 0) || iter % 1000 == 0))
-			printf("#%i: %f\n", iter, error);
+		*res /= numFluidCells;
+		*res = sqrt(*res);
 		
-		iter++;
+		(*iter)++;
 	}
-	printf("It: %i, Res: %f\n", iter, error);
-	if (iter == itermax) 
-		printf("Abgebrochen nach %i iterationen mit einem Fehler von %f\n", iter, error);
+	
+	if (*iter == itermax) 
+		printf("Abgebrochen nach %i iterationen\n", itermax);
 }
 
 double min (double a, double b) {
@@ -66,9 +64,10 @@ double min (double a, double b) {
 	return min;
 }
 
-void computeDelt(double *delt, int imax, int jmax, double delx, double dely, double umax, double vmax, double Re, double Pr, double tau) {
+void computeDelt(double *delt, double delt_min, int imax, int jmax, double delx, double dely, double umax, double vmax, double Re, double Pr, double tau) {
 	if (tau >= 0) {
 		(*delt) = min(0.5 * Re * 1/(1/(delx*delx) + 1/(dely*dely)), min(delx/umax, min(dely/vmax, 0.5 * Re * Pr * 1/(1/(delx*delx) + 1/(dely*dely)))));
+		(*delt) = min(*delt, delt_min);
 		(*delt) *= tau;
 	}
 }
@@ -137,7 +136,7 @@ void computeFG(double *U, double *V, double *F, double *G, double *TEMP, char *F
 						duvy = oneOverDelY * 0.25 * (((vij+viPj)*(uij+uijP) - (vijM+viPjM)*(uijM+uij)) +
 													alpha * (fabs(vij+viPj)*(uij-uijP) - fabs(vijM+viPjM)*(uijM-uij)));
 								
-						F[POS2D(i,j,imax+2)] = uij + delt * (1/Re * (ddux+dduy) - duux - duvy + GX);
+						F[POS2D(i,j,imax+2)] = uij + delt * (1/Re * (ddux+dduy) - duux - duvy);
 					}
 					
 					if (j < jmax && (!FLAG[POS2D(i, j, imax+2)] && !FLAG[POS2D(i, j+1, imax+2)])) {				
@@ -148,19 +147,10 @@ void computeFG(double *U, double *V, double *F, double *G, double *TEMP, char *F
 						duvx = oneOverDelX * 0.25 * (((uij+uijP)*(vij+viPj) - (uiMj+uiMjP)*(viMj+vij)) + 
 													alpha * (fabs(uij+uijP)*(vij-viPj) - fabs(uiMj+uiMjP)*(viMj-vij)));
 								
-						G[POS2D(i,j,imax+2)] = vij + delt * (1/Re * (ddvx+ddvy) - duvx - dvvy + GY);
+						G[POS2D(i,j,imax+2)] = vij + delt * (1/Re * (ddvx+ddvy) - duvx - dvvy);
 					}
 					break;
 			}
-		}
-	}
-
-/*Erweiterung um Boussinesq-Term nach Energiegleichung: */
-
-	for (int i = 1; i <= imax; i++) {
-		for (int j = 1; j <= jmax; j++) {	
-			F[POS2D(i,j,imax+2)]=F[POS2D(i,j,imax+2)]-beta*0.5*delt*(TEMP[POS2D(i,j,imax+2)]+TEMP[POS2D(i+1,j,imax+2)])*GX;
-			G[POS2D(i,j,imax+2)]=G[POS2D(i,j,imax+2)]-beta*0.5*delt*(TEMP[POS2D(i,j,imax+2)]+TEMP[POS2D(i,j+1,imax+2)])*GY;
 		}
 	}
 
@@ -172,6 +162,15 @@ void computeFG(double *U, double *V, double *F, double *G, double *TEMP, char *F
 	for (int i = 1; i <= imax; i++) {
 		G[POS2D(i,0,imax+2)] = V[POS2D(i, 0,imax+2)];
 		G[POS2D(i,jmax,imax+2)] = V[POS2D(i,jmax,imax+2)];
+	}
+
+/*Erweiterung um Boussinesq-Term nach Energiegleichung: */
+
+	for (int i = 1; i <= imax; i++) {
+		for (int j = 1; j <= jmax; j++) {	
+			F[POS2D(i,j,imax+2)] -= beta*0.5*delt*(TEMP[POS2D(i,j,imax+2)]+TEMP[POS2D(i+1,j,imax+2)])*GX;
+			G[POS2D(i,j,imax+2)] -= beta*0.5*delt*(TEMP[POS2D(i,j,imax+2)]+TEMP[POS2D(i,j+1,imax+2)])*GY;
+		}
 	}
 }
 
@@ -217,13 +216,10 @@ void adapUV(double *U, double *V, double *F, double *G, double *P, char *FLAG, i
 	}
 }
 
-
-
 void computeTEMP(double *U, double *V, double *TEMP, char *FLAG,  int imax, 
-					int jmax, double delt, double delx, double dely, double GX, double GY, double alpha, double Re, double Pr, double beta){
+					int jmax, double delt, double delx, double dely, double alpha, double Re, double Pr){
 
-	double duTx, dvTy, ddTxx, ddTyy;
-	double dTt;
+	double duTx, dvTy, ddTxx, ddTyy, dTt;
 	double oneOverDelX = 1 / delx;	
 	double oneOverDelY = 1 / dely;
 	double uij, uiMj, vij, vijM, Tij, TiPj, TiMj, TijP, TijM;
@@ -253,10 +249,10 @@ void computeTEMP(double *U, double *V, double *TEMP, char *FLAG,  int imax,
 			
 			//ddTyy=oneOverDelY*oneOverDelY*(TEMP[POS2D(i, j+1, imax+2)]-2*TEMP[POS2D(i, j, imax+2)]+TEMP[POS2D(i, j-1, imax+2)]);
 
-			//dTt=(1./Re)*(1./Pr)*(ddTxx+ddTyy)-duTx-dvTy;
+			dTt=(1./Re)*(1./Pr)*(ddTxx+ddTyy)-duTx-dvTy;
 	
 			//TEMP[POS2D(i+1, j, imax+2)]=delt*dTt+TEMP[POS2D(i+1, j, imax+2)];
-			TEMP[POS2D(i, j, imax+2)] = delt*((1./Re)*(1./Pr)*(ddTxx+ddTyy)-duTx-dvTy)+Tij;
+			TEMP[POS2D(i, j, imax+2)] += delt*dTt;
 		}
 	}
 
