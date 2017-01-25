@@ -136,7 +136,7 @@ void computeFG(double *U, double *V, double *F, double *G, double *TEMP, char *F
 						duvy = oneOverDelY * 0.25 * (((vij+viPj)*(uij+uijP) - (vijM+viPjM)*(uijM+uij)) +
 													alpha * (fabs(vij+viPj)*(uij-uijP) - fabs(vijM+viPjM)*(uijM-uij)));
 								
-						F[POS2D(i,j,imax+2)] = uij + delt * (1/Re * (ddux+dduy) - duux - duvy);
+						F[POS2D(i,j,imax+2)] = uij + delt * (1/Re * (ddux+dduy) - duux - duvy + GX);
 					}
 					
 					if (j < jmax && (!FLAG[POS2D(i, j, imax+2)] && !FLAG[POS2D(i, j+1, imax+2)])) {				
@@ -147,7 +147,7 @@ void computeFG(double *U, double *V, double *F, double *G, double *TEMP, char *F
 						duvx = oneOverDelX * 0.25 * (((uij+uijP)*(vij+viPj) - (uiMj+uiMjP)*(viMj+vij)) + 
 													alpha * (fabs(uij+uijP)*(vij-viPj) - fabs(uiMj+uiMjP)*(viMj-vij)));
 								
-						G[POS2D(i,j,imax+2)] = vij + delt * (1/Re * (ddvx+ddvy) - duvx - dvvy);
+						G[POS2D(i,j,imax+2)] = vij + delt * (1/Re * (ddvx+ddvy) - duvx - dvvy + GY);
 					}
 					break;
 			}
