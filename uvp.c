@@ -55,7 +55,7 @@ void solvePoisson(double *p, double *rhs, char *FLAG, double omega, double epsil
 	}
 	
 	if (*iter == itermax) 
-		printf("Abgebrochen nach %i iterationen\n", itermax);
+		printf("Abgebrochen nach %i iterationen mit Fehler %f\n", itermax, *res);
 }
 
 double min (double a, double b) {

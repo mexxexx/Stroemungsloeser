@@ -1,0 +1,40 @@
+name = DrivenCavity
+heightMap = driven_cavity.bmp
+xlength = 1
+ylength = 1
+imax = 25
+jmax = 25
+delt = 0.02
+t_end = 30
+del_vec = 0.1
+tau = 0.5
+itermax = 10000000
+eps = 1e-5
+omg = 1.88177
+alpha = 0.5
+Re = 10
+Pr = 1
+beta = 1
+GX = 0
+GY = 0
+UI = 0
+VI = 0
+PI = 0
+TI = 0
+wl = 1 2 0
+wr = 1 2 0
+wt = 1 2 0
+wb = 1 2 0
+posx1 = 0
+posy1 = 0
+posx2 = 1
+posy2 = 1
+
+% Wand_Hindernis:
+% 1 = No-Slip
+% 2 = Slip
+% 3 = Ausfluss
+
+% Wand_Temperatur:
+% 1 = Dirichlet
+% 2 = Neumann

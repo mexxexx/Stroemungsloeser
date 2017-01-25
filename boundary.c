@@ -291,7 +291,7 @@ void obstacleBC(double *p, char *FLAG, int imax, int jmax, double deltaX, double
 
 
 void initDrivenCavity(double *U, double *V, int imax, int jmax) {
-	for (int i = 1; i <= imax; i++) {
+	for (int i = 0; i <= imax+1; i++) {
 		U[POS2D(i, jmax+1, imax+2)] = (2.0 - U[POS2D(i, jmax, imax+2)]);
 		//U[POS2D(i, 0, imax+2)] = -(2.0 - U[POS2D(i, 1, imax+2)]);
 	}
@@ -307,8 +307,6 @@ void initWest(double *U, double *V, int imax, int jmax) {
 		V[POS2D(0,j,imax+2)]=-V[POS2D(1,j,imax+2)];	//Links einströmen
 	}
 }
-
-
 
 void initEast(double *U, double *V, int imax, int jmax) {
 	for (int j = 1; j <= jmax; j++) {

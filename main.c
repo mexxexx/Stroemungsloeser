@@ -303,7 +303,6 @@ int main(int argc, char** argv) {
 	}
 	
 	calculateFluidDynamics(U, V, P, TEMP, FLAG, PSI, ZETA, HEAT, particles, partCount);
-	printField(TEMP, imax, jmax);
 	
 	free(particles);
 	free(FLAG);
