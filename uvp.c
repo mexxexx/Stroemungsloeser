@@ -164,7 +164,7 @@ void computeFG(double *U, double *V, double *F, double *G, double *TEMP, char *F
 		G[POS2D(i,jmax,imax+2)] = V[POS2D(i,jmax,imax+2)];
 	}
 
-/*Erweiterung um Boussinesq-Term nach Energiegleichung: */
+	/*Erweiterung um Boussinesq-Term nach Energiegleichung: */
 
 	for (int i = 1; i <= imax; i++) {
 		for (int j = 1; j <= jmax; j++) {	
@@ -255,5 +255,4 @@ void computeTEMP(double *U, double *V, double *TEMP, char *FLAG,  int imax,
 			TEMP[POS2D(i, j, imax+2)] += delt*dTt;
 		}
 	}
-
 }

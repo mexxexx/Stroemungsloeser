@@ -121,6 +121,7 @@ int calculateFluidDynamics(double* U, double* V, double* P, double *TEMP, char* 
 	double seedTime = 0;
 	double umax = (fabs(UI) > eps) ? UI : eps;
 	double vmax = (fabs(VI) > eps) ? VI : eps;
+	delt = delt_min;
 	start = time(NULL);
 	
 	int iter;
@@ -303,6 +304,7 @@ int main(int argc, char** argv) {
 	}
 	
 	calculateFluidDynamics(U, V, P, TEMP, FLAG, PSI, ZETA, HEAT, particles, partCount);
+	printField(TEMP, imax, jmax);
 	
 	free(particles);
 	free(FLAG);
